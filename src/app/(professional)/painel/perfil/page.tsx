@@ -13,11 +13,7 @@ export default async function PainelPerfilPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user!.id)
-    .single() as { data: { full_name: string | null } | null };
+  const fullName = user!.user_metadata?.full_name ?? user!.email ?? null;
 
   const { data: pro } = await supabase
     .from("professional_profiles")
@@ -90,7 +86,7 @@ export default async function PainelPerfilPage() {
           state: pro?.state ?? null,
           service_radius_km: pro?.service_radius_km ?? null,
         }}
-        fullName={profile?.full_name ?? null}
+        fullName={fullName}
         specialties={specialtiesData.map((s) => s.category)}
         affinities={affinitiesData.map((a) => a.tag)}
         channels={channelsData}

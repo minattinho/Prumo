@@ -18,7 +18,7 @@ export default async function ProfessionalLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, full_name")
+    .select("role")
     .eq("id", user.id)
     .single();
 
@@ -32,9 +32,11 @@ export default async function ProfessionalLayout({
     .eq("user_id", user.id)
     .single();
 
+  const displayName = user.user_metadata?.full_name ?? user.email ?? null;
+
   return (
     <div className="min-h-screen flex bg-[#F8FAFC]">
-      <Sidebar profile={profile} professionalProfile={professionalProfile} />
+      <Sidebar profile={{ full_name: displayName }} professionalProfile={professionalProfile} />
       <main className="flex-1 min-w-0">{children}</main>
     </div>
   );

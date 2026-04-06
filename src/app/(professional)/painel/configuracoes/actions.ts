@@ -15,7 +15,7 @@ export async function updateAccountSettings(data: {
 
   const { error } = await supabase
     .from("profiles")
-    .update({ full_name: data.full_name, phone: data.phone })
+    .update({ name: data.full_name, phone: data.phone })
     .eq("id", user.id);
 
   if (error) return { error: "Erro ao salvar configurações" };

@@ -11,10 +11,10 @@ export default async function ConfiguracoesPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, phone, email")
+    .select("name, phone, email")
     .eq("id", user!.id)
     .single() as {
-      data: { full_name: string | null; phone: string | null; email: string | null } | null;
+      data: { name: string | null; phone: string | null; email: string | null } | null;
     };
 
   return (
@@ -24,7 +24,7 @@ export default async function ConfiguracoesPage() {
         <p className="text-sm text-cinza-texto mt-0.5">Gerencie sua conta e segurança.</p>
       </div>
       <SettingsClient
-        fullName={profile?.full_name ?? ""}
+        fullName={profile?.name ?? user!.user_metadata?.full_name ?? ""}
         phone={profile?.phone ?? ""}
         email={profile?.email ?? user?.email ?? ""}
       />

@@ -42,22 +42,22 @@ export default async function AssinaturaPage() {
   let transactions: Transaction[] = [];
 
   if (pro?.id) {
-    const [{ data: subData }, { data: txData }] = await Promise.all([
+    const [subResult, txResult] = await Promise.all([
       supabase
         .from("professional_subscriptions")
         .select("plan, status, trial_ends_at, current_period_end, stripe_subscription_id")
         .eq("professional_id", pro.id)
-        .maybeSingle() as Promise<{ data: SubData }>,
+        .maybeSingle(),
       supabase
         .from("payment_transactions")
         .select("id, amount, currency, status, created_at")
         .eq("professional_id", pro.id)
         .order("created_at", { ascending: false })
-        .limit(20) as Promise<{ data: Transaction[] | null }>,
+        .limit(20),
     ]);
 
-    sub = subData;
-    transactions = txData ?? [];
+    sub = subResult.data as SubData;
+    transactions = (txResult.data as Transaction[] | null) ?? [];
   }
 
   // Fallback para dados do professional_profiles caso não haja row em professional_subscriptions

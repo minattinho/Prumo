@@ -58,11 +58,7 @@ export default async function PainelPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user!.id)
-    .single();
+  const firstName = (user!.user_metadata?.full_name ?? user!.email ?? "Profissional").split(" ")[0];
 
   const { data: pro } = await supabase
     .from("professional_profiles")
@@ -102,7 +98,6 @@ export default async function PainelPage() {
   ];
   const completionScore = checks.reduce((acc, c) => acc + (c.done ? c.pts : 0), 0);
 
-  const firstName = (profile?.full_name ?? "Profissional").split(" ")[0];
   const status = pro?.status ?? "PENDING";
   const subStatus = pro?.subscription_status ?? "TRIAL";
   const statusBadge = statusLabels[status] ?? statusLabels.PENDING;
