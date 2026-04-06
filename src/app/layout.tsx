@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: "%s | Prumo",
   },
   description:
-    "Marketplace de profissionais para seu imóvel — do encanador ao arquiteto. Encontre o profissional certo para sua obra.",
+    "Marketplace de profissionais — do encanador ao arquiteto. Encontre o profissional certo para seu trabalho.",
   keywords: ["pedreiro", "eletricista", "encanador", "reforma", "construção", "obra", "profissional"],
   authors: [{ name: "Prumo" }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_MAIN_URL ?? "https://meuprumo.com.br"),

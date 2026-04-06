@@ -119,8 +119,10 @@ export default function HomePage() {
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight mb-5">
-            Encontre o profissional<br className="hidden sm:block" />
-            <span className="text-laranja-obra"> certo para sua obra.</span>
+            Encontre os melhores<br className="hidden sm:block" />
+            <span className="text-laranja-obra"> prestadores de serviços</span>
+            <br />
+            <span className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight mb-5"> na sua região.</span>
           </h1>
 
           <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-10 leading-relaxed">

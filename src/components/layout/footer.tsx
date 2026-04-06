@@ -67,7 +67,7 @@ export function Footer() {
           <div className="md:col-span-1">
             <Logo variant="white" />
             <p className="mt-3 text-sm text-blue-200 leading-relaxed">
-              Marketplace de profissionais para seu imóvel — do encanador ao arquiteto.
+              Marketplace de profissionais — do encanador ao arquiteto.
             </p>
             <div className="mt-5 flex items-center gap-3">
               {socialLinks.map((s) => (
