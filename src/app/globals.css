@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/* =========================================
+   PRUMO — Design System
+   Tailwind CSS v4 (@theme inline)
+   ========================================= */
+
+@theme inline {
+  /* Brand Colors */
+  --color-azul-principal: #1A5DB8;
+  --color-azul-noite: #1A2B4A;
+  --color-azul-medio: #4A90E2;
+  --color-azul-claro: #EAF0FB;
+  --color-laranja-obra: #E8761A;
+  --color-cinza-texto: #555555;
+  --color-background: #ffffff;
+  --color-foreground: #1A2B4A;
+
+  /* Typography */
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Border Radius */
+  --radius-card: 12px;
+  --radius-DEFAULT: 8px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1A2B4A;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus ring padrão acessível */
+*:focus-visible {
+  outline: 2px solid #1A5DB8;
+  outline-offset: 2px;
+}
