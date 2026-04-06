@@ -8,6 +8,9 @@ import {
   Images,
   Briefcase,
   MessageSquare,
+  Star,
+  CreditCard,
+  Settings,
   LogOut,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -24,11 +27,14 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { label: "Dashboard", href: "/painel", icon: LayoutDashboard, exact: true },
-  { label: "Perfil", href: "/painel/perfil", icon: User, exact: false },
-  { label: "Portfólio", href: "/painel/portfolio", icon: Images, exact: false },
-  { label: "Serviços", href: "/painel/servicos", icon: Briefcase, exact: false },
-  { label: "Solicitações", href: "/painel/solicitacoes", icon: MessageSquare, exact: false },
+  { label: "Dashboard",     href: "/painel",               icon: LayoutDashboard, exact: true  },
+  { label: "Perfil",        href: "/painel/perfil",        icon: User,            exact: false },
+  { label: "Portfólio",     href: "/painel/portfolio",     icon: Images,          exact: false },
+  { label: "Serviços",      href: "/painel/servicos",      icon: Briefcase,       exact: false },
+  { label: "Solicitações",  href: "/painel/solicitacoes",  icon: MessageSquare,   exact: false },
+  { label: "Avaliações",    href: "/painel/avaliacoes",    icon: Star,            exact: false },
+  { label: "Assinatura",    href: "/painel/assinatura",    icon: CreditCard,      exact: false },
+  { label: "Configurações", href: "/painel/configuracoes", icon: Settings,        exact: false },
 ];
 
 const subscriptionLabels: Record<string, { label: string; className: string }> = {
