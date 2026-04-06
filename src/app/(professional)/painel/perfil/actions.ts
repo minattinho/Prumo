@@ -4,11 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 async function getProfessionalId(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("professional_profiles")
     .select("id")
     .eq("user_id", userId)
-    .single();
+    .maybeSingle();
+  if (error) console.error("[getProfessionalId] Supabase error:", error);
   return data?.id ?? null;
 }
 

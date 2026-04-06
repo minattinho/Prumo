@@ -10,14 +10,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Prumo — Sua obra no prumo.",
+    default: "Meu Prumo",
     template: "%s | Prumo",
   },
   description:
     "Marketplace de profissionais para seu imóvel — do encanador ao arquiteto. Encontre o profissional certo para sua obra.",
   keywords: ["pedreiro", "eletricista", "encanador", "reforma", "construção", "obra", "profissional"],
   authors: [{ name: "Prumo" }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://prumo.com.br"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_MAIN_URL ?? "https://meuprumo.com.br"),
   openGraph: {
     type: "website",
     locale: "pt_BR",

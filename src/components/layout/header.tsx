@@ -7,6 +7,10 @@ export async function Header() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
+    : { data: null };
+
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,7 +37,7 @@ export async function Header() {
           {/* Ações */}
           <div className="flex items-center gap-3">
             {user ? (
-              <HeaderUserMenu user={user} />
+              <HeaderUserMenu user={user} role={profile?.role ?? "contractor"} />
             ) : (
               <>
                 <Link

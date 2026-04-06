@@ -144,28 +144,20 @@ function IdentidadeTab({ profile, fullName }: { profile: ProfileData; fullName: 
     setError(null);
 
     try {
-      const credRes = await fetch("/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folder: "profiles" }),
-      });
-      const { timestamp, signature, cloudName, apiKey } = await credRes.json();
-
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("timestamp", String(timestamp));
-      fd.append("signature", signature);
-      fd.append("api_key", apiKey);
       fd.append("folder", "profiles");
 
-      const uploadRes = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        { method: "POST", body: fd }
-      );
-      const { secure_url } = await uploadRes.json();
+      const uploadRes = await fetch("/api/upload", { method: "POST", body: fd });
+      const { url, error: uploadError } = await uploadRes.json();
 
-      setPhotoUrl(secure_url);
-      const res = await updatePhoto(secure_url);
+      if (uploadError) {
+        setError("Erro ao fazer upload da foto");
+        return;
+      }
+
+      setPhotoUrl(url);
+      const res = await updatePhoto(url);
       if (res?.error) setError(res.error);
     } catch {
       setError("Erro ao fazer upload da foto");

@@ -1,110 +1,25 @@
 import { notFound } from "next/navigation";
-import { MapPin, Star, ShieldCheck, Phone, Mail, MessageCircle, ExternalLink, ChevronRight } from "lucide-react";
+import { MapPin, Star, ShieldCheck, ExternalLink, ChevronRight, Lock } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 import { ContactButton } from "./contact-button";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-// Mock temporário — será substituído por query ao Supabase
-const MOCK_PROFESSIONAL = {
-  id: "1",
-  slug: "joao-silva-eletricista",
-  name: "João Silva",
-  city: "Criciúma",
-  state: "SC",
-  serviceRadiusKm: 50,
-  description:
-    "Eletricista com mais de 12 anos de experiência em instalações residenciais e comerciais. Trabalho com materiais de qualidade, deixo tudo documentado e entrego laudo após o serviço. Atendo finais de semana e emergências.",
-  specialties: ["Elétrica", "Automação"],
-  affinities: ["Atendo finais de semana", "Emite nota fiscal", "Orçamento gratuito", "Pequenas reformas"],
-  photoUrl: null,
-  isVerified: true,
-  badges: ["VERIFIED", "TRUSTWORTHY"],
-  rating: 4.8,
-  reviewCount: 23,
-  primaryContact: {
-    type: "WHATSAPP" as const,
-    value: "48999990000",
-    link: "https://wa.me/5548999990000",
-  },
-  secondaryContacts: [
-    { type: "PHONE" as const, value: "(48) 3333-4444", link: "tel:4833334444" },
-    { type: "EMAIL" as const, value: "joao@email.com", link: "mailto:joao@email.com" },
-  ],
-  socialNetworks: [
-    { platform: "INSTAGRAM" as const, url: "https://instagram.com/joaoeletricista" },
-  ],
-  portfolioProjects: [
-    {
-      id: "p1",
-      title: "Instalação elétrica completa — sobrado 3 andares",
-      category: "Elétrica",
-      city: "Criciúma",
-      description: "Projeto e execução completa da instalação elétrica de sobrado com 3 andares e 4 quartos. Passagem de fiação, quadro de distribuição, spda e automação de iluminação.",
-      images: [null, null, null, null],
-      isFeatured: true,
-    },
-    {
-      id: "p2",
-      title: "Reforma elétrica — apartamento",
-      category: "Elétrica",
-      city: "Içara",
-      description: "Modernização do quadro elétrico e troca de fiação antiga.",
-      images: [null, null],
-      isFeatured: false,
-    },
-    {
-      id: "p3",
-      title: "Automação residencial",
-      category: "Automação",
-      city: "Criciúma",
-      description: "Instalação de sistema de automação para controle de iluminação e climatização.",
-      images: [null, null, null],
-      isFeatured: false,
-    },
-  ],
-  evaluations: [
-    {
-      id: "e1",
-      contractorName: "Maria Fernanda",
-      rating: 5,
-      comment: "João foi muito profissional. Chegou no horário, trabalhou limpo e entregou tudo funcionando. Super recomendo!",
-      createdAt: "2024-11-10",
-      response: "Obrigado pela confiança, Maria! Foi um prazer trabalhar no seu imóvel.",
-    },
-    {
-      id: "e2",
-      contractorName: "Carlos Henrique",
-      rating: 5,
-      comment: "Excelente serviço. Muito cuidadoso e organizado.",
-      createdAt: "2024-10-22",
-      response: null,
-    },
-    {
-      id: "e3",
-      contractorName: "Juliana Costa",
-      rating: 4,
-      comment: "Bom profissional, trabalho bem feito. Só um pequeno atraso no prazo.",
-      createdAt: "2024-09-15",
-      response: "Obrigado pelo feedback, Juliana. Tivemos um imprevisto com o material, mas ficou tudo certo!",
-    },
-  ],
-};
-
-const CONTACT_ICONS = {
-  WHATSAPP: MessageCircle,
-  PHONE: Phone,
-  EMAIL: Mail,
-};
-
-const CONTACT_LABELS = {
+const CONTACT_LABELS: Record<string, string> = {
   WHATSAPP: "WhatsApp",
   PHONE: "Telefone",
   EMAIL: "E-mail",
 };
 
-// lucide-react não tem ícones de redes sociais — usando SVGs inline via mapa de labels
+function getContactLink(type: string, value: string, linkFormatted: string | null): string {
+  if (linkFormatted) return linkFormatted;
+  if (type === "EMAIL") return `mailto:${value}`;
+  if (type === "WHATSAPP") return `https://api.whatsapp.com/send/?phone=${value}&text=Ol%C3%A1,+Vim+pelo+Prumo!`;
+  return `tel:${value}`;
+}
+
 const SOCIAL_LABELS: Record<string, string> = {
   INSTAGRAM: "IG",
   FACEBOOK: "FB",
@@ -121,13 +36,121 @@ const BADGE_LABELS: Record<string, { label: string; color: string }> = {
 
 export default async function ProfissionalProfilePage({ params }: Props) {
   const { slug } = await params;
+  const supabase = await createClient();
 
-  // TODO: buscar do Supabase
-  if (slug !== MOCK_PROFESSIONAL.slug) notFound();
+  // 1. Perfil profissional (RLS filtra status=ACTIVE para visitantes)
+  const { data: pro } = await supabase
+    .from("professional_profiles")
+    .select("id, user_id, slug, photo_url, personal_description, city, state, service_radius_km")
+    .eq("slug", slug)
+    .single() as { data: {
+      id: string; user_id: string; slug: string; photo_url: string | null;
+      personal_description: string | null; city: string | null; state: string | null;
+      service_radius_km: number | null;
+    } | null };
 
-  const pro = MOCK_PROFESSIONAL;
-  const initials = pro.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
-  const PrimaryIcon = CONTACT_ICONS[pro.primaryContact.type];
+  if (!pro) notFound();
+
+  // 2. Nome do profissional
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("name")
+    .eq("id", pro.user_id)
+    .single() as { data: { name: string } | null };
+
+  // 3. Auth check (server-side)
+  const { data: { user } } = await supabase.auth.getUser();
+  const isAuthenticated = !!user;
+
+  // 4. Dados públicos em paralelo
+  const [
+    { data: specialties },
+    { data: affinities },
+    { data: projects },
+    { data: metrics },
+    { data: badges },
+    { data: socials },
+    { data: evals },
+  ] = await Promise.all([
+    supabase.from("professional_specialties").select("category").eq("professional_id", pro.id),
+    supabase.from("professional_affinities").select("tag").eq("professional_id", pro.id),
+    supabase
+      .from("portfolio_projects")
+      .select("id, title, category, city_executed, description, is_featured, display_order, portfolio_images(cloudinary_url, order_in_project)")
+      .eq("professional_id", pro.id)
+      .order("display_order"),
+    supabase
+      .from("professional_metrics")
+      .select("average_rating, total_evaluations")
+      .eq("professional_id", pro.id)
+      .single(),
+    supabase.from("verification_badges").select("type").eq("professional_id", pro.id),
+    supabase.from("professional_social_networks").select("platform, handle_or_url").eq("professional_id", pro.id),
+    supabase
+      .from("evaluations")
+      .select("id, rating, comment, created_at, profiles!contractor_id(name), evaluation_responses(response_text)")
+      .eq("professional_id", pro.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
+
+  // 5. Canais de contato — somente se autenticado (RLS também garante isso)
+  let channels: Array<{ id: string; type: string; value: string; is_primary: boolean; link_formatted: string | null }> = [];
+  if (isAuthenticated) {
+    const { data: channelData } = await supabase
+      .from("professional_contact_channels")
+      .select("id, type, value, is_primary, link_formatted")
+      .eq("professional_id", pro.id)
+      .order("is_primary", { ascending: false });
+    channels = channelData ?? [];
+
+    // Logs de atividade (não registra o próprio profissional)
+    if (user!.id !== pro.user_id) {
+      // PROFILE_VIEWED: toda visita autenticada ao perfil
+      await supabase.from("profile_activity_logs").insert({
+        professional_id: pro.id,
+        contractor_id: user!.id,
+        event_type: "PROFILE_VIEWED",
+      });
+
+      // contact_logs: só primeira vez (controla métricas e permissão de avaliação)
+      if (channels.length > 0) {
+        const { count } = await supabase
+          .from("contact_logs")
+          .select("id", { count: "exact", head: true })
+          .eq("contractor_id", user!.id)
+          .eq("professional_id", pro.id);
+
+        if (count === 0) {
+          const primary = channels.find((c) => c.is_primary) ?? channels[0];
+          const logType =
+            primary.type === "WHATSAPP" ? "VIEWED_WHATSAPP"
+            : primary.type === "PHONE" ? "VIEWED_PHONE"
+            : "VIEWED_EMAIL";
+          await supabase.from("contact_logs").insert({
+            contractor_id: user!.id,
+            professional_id: pro.id,
+            contact_type: logType,
+          });
+        }
+
+        // CONTACT_VIEWED: toda vez que contatos são exibidos
+        await supabase.from("profile_activity_logs").insert({
+          professional_id: pro.id,
+          contractor_id: user!.id,
+          event_type: "CONTACT_VIEWED",
+        });
+      }
+    }
+  }
+
+  const name = profile?.name ?? "Profissional";
+  const initials = name.split(" ").slice(0, 2).map((n: string) => n[0]).join("").toUpperCase();
+  const avgRating = (metrics as any)?.average_rating ?? 0;
+  const totalEvals = (metrics as any)?.total_evaluations ?? 0;
+
+  const primaryChannel = channels.find((c) => c.is_primary) ?? channels[0] ?? null;
+  const secondaryChannels = channels.filter((c) => c !== primaryChannel && ["WHATSAPP", "PHONE", "EMAIL"].includes(c.type));
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -142,9 +165,9 @@ export default async function ProfissionalProfilePage({ params }: Props) {
               <div className="flex gap-4 items-start">
                 {/* Avatar */}
                 <div className="w-20 h-20 rounded-full shrink-0 overflow-hidden bg-azul-claro flex items-center justify-center">
-                  {pro.photoUrl ? (
+                  {pro.photo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={pro.photoUrl} alt={pro.name} className="w-full h-full object-cover" />
+                    <img src={pro.photo_url} alt={name} className="w-full h-full object-cover" />
                   ) : (
                     <span className="text-azul-principal font-bold text-2xl">{initials}</span>
                   )}
@@ -152,237 +175,295 @@ export default async function ProfissionalProfilePage({ params }: Props) {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h1 className="text-xl font-semibold text-azul-noite">{pro.name}</h1>
-                    {pro.isVerified && <ShieldCheck size={18} className="text-azul-medio" />}
+                    <h1 className="text-xl font-semibold text-azul-noite">{name}</h1>
+                    {(badges ?? []).some((b: any) => b.type === "VERIFIED") && (
+                      <ShieldCheck size={18} className="text-azul-medio" />
+                    )}
                   </div>
 
                   {/* Localização */}
-                  <div className="flex items-center gap-1 text-sm text-cinza-texto mb-3">
-                    <MapPin size={13} />
-                    <span>{pro.city}, {pro.state} · Atende até {pro.serviceRadiusKm}km</span>
-                  </div>
+                  {(pro.city || pro.state) && (
+                    <div className="flex items-center gap-1 text-sm text-cinza-texto mb-3">
+                      <MapPin size={13} />
+                      <span>
+                        {[pro.city, pro.state].filter(Boolean).join(", ")}
+                        {pro.service_radius_km ? ` · Atende até ${pro.service_radius_km}km` : ""}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Badges */}
-                  <div className="flex flex-wrap gap-2">
-                    {pro.badges.map((badge) => {
-                      const b = BADGE_LABELS[badge];
-                      return (
-                        <span key={badge} className={`text-xs font-medium px-2.5 py-1 rounded-full ${b.color}`}>
-                          {b.label}
-                        </span>
-                      );
-                    })}
-                  </div>
+                  {(badges ?? []).length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {(badges as any[]).map((b: any) => {
+                        const badge = BADGE_LABELS[b.type];
+                        if (!badge) return null;
+                        return (
+                          <span key={b.type} className={`text-xs font-medium px-2.5 py-1 rounded-full ${badge.color}`}>
+                            {badge.label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Rating */}
-                <div className="text-right shrink-0">
-                  <div className="flex items-center gap-1 justify-end">
-                    <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                    <span className="font-semibold text-azul-noite">{pro.rating.toFixed(1)}</span>
+                {totalEvals > 0 && (
+                  <div className="text-right shrink-0">
+                    <div className="flex items-center gap-1 justify-end">
+                      <Star size={16} className="text-yellow-400 fill-yellow-400" />
+                      <span className="font-semibold text-azul-noite">{Number(avgRating).toFixed(1)}</span>
+                    </div>
+                    <p className="text-xs text-cinza-texto">{totalEvals} avaliações</p>
                   </div>
-                  <p className="text-xs text-cinza-texto">{pro.reviewCount} avaliações</p>
-                </div>
+                )}
               </div>
 
               {/* Descrição */}
-              <p className="mt-4 text-sm text-cinza-texto leading-relaxed border-t border-gray-100 pt-4">
-                {pro.description}
-              </p>
-
-              {/* Especialidades */}
-              <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-cinza-texto mb-2">Especialidades</p>
-                <div className="flex flex-wrap gap-2">
-                  {pro.specialties.map((s) => (
-                    <span key={s} className="text-sm bg-azul-claro text-azul-principal px-3 py-1 rounded-full font-medium">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Afinidades */}
-              <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-cinza-texto mb-2">Diferenciais</p>
-                <div className="flex flex-wrap gap-2">
-                  {pro.affinities.map((tag) => (
-                    <span key={tag} className="text-xs border border-gray-200 text-cinza-texto px-2.5 py-1 rounded-full">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Portfólio */}
-            <div className="bg-white rounded-card shadow-card p-6">
-              <h2 className="text-lg font-semibold text-azul-noite mb-4">Portfólio</h2>
-              <div className="space-y-6">
-                {pro.portfolioProjects.map((project) => (
-                  <div key={project.id} className="border border-gray-100 rounded-lg overflow-hidden">
-                    {/* Galeria de fotos */}
-                    <div className="grid grid-cols-4 gap-0.5 h-40 bg-gray-100">
-                      {project.images.slice(0, 4).map((img, i) => (
-                        <div
-                          key={i}
-                          className={`relative overflow-hidden bg-linear-to-br from-azul-claro to-blue-100 ${i === 0 ? "col-span-2 row-span-2" : ""}`}
-                          style={i === 0 ? { gridRow: "span 2" } : {}}
-                        >
-                          {img ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={img} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <span className="text-xs text-azul-medio">Foto</span>
-                            </div>
-                          )}
-                          {i === 3 && project.images.length > 4 && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                              <span className="text-white text-sm font-medium">+{project.images.length - 4}</span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Info do projeto */}
-                    <div className="p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            {project.isFeatured && (
-                              <span className="text-xs bg-laranja-obra/10 text-laranja-obra px-2 py-0.5 rounded-full font-medium">
-                                Destaque
-                              </span>
-                            )}
-                            <span className="text-xs text-cinza-texto">{project.category}</span>
-                            <span className="text-xs text-cinza-texto">· {project.city}</span>
-                          </div>
-                          <h3 className="font-medium text-azul-noite text-sm">{project.title}</h3>
-                          {project.description && (
-                            <p className="text-xs text-cinza-texto mt-1 leading-relaxed">{project.description}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Avaliações */}
-            <div className="bg-white rounded-card shadow-card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-azul-noite">Avaliações</h2>
-                <div className="flex items-center gap-1.5">
-                  <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                  <span className="font-semibold text-azul-noite">{pro.rating.toFixed(1)}</span>
-                  <span className="text-sm text-cinza-texto">({pro.reviewCount})</span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {pro.evaluations.map((ev) => {
-                  const evInitials = ev.contractorName.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase();
-                  return (
-                    <div key={ev.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 text-cinza-texto text-xs font-semibold flex items-center justify-center shrink-0">
-                          {evInitials}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium text-azul-noite">{ev.contractorName}</span>
-                            <div className="flex">
-                              {Array.from({ length: 5 }).map((_, i) => (
-                                <Star
-                                  key={i}
-                                  size={11}
-                                  className={i < ev.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200"}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                          <p className="text-sm text-cinza-texto leading-relaxed">{ev.comment}</p>
-                          {ev.response && (
-                            <div className="mt-2 pl-3 border-l-2 border-azul-claro">
-                              <p className="text-xs text-azul-noite font-medium mb-0.5">Resposta do profissional:</p>
-                              <p className="text-xs text-cinza-texto leading-relaxed">{ev.response}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Coluna lateral — Contato */}
-          <div className="space-y-4">
-
-            {/* Card contato principal */}
-            <div className="bg-white rounded-card shadow-card p-5 sticky top-24">
-              <p className="text-xs font-semibold uppercase tracking-wider text-cinza-texto mb-3">
-                Entrar em contato
-              </p>
-
-              {/* Contato principal destacado */}
-              <ContactButton
-                type={pro.primaryContact.type}
-                link={pro.primaryContact.link}
-                label={`${CONTACT_LABELS[pro.primaryContact.type]}: ${pro.primaryContact.value}`}
-                primary
-              />
-
-              {/* Contatos secundários */}
-              {pro.secondaryContacts.length > 0 && (
-                <div className="mt-3 space-y-2">
-                  {pro.secondaryContacts.map((contact) => {
-                    return (
-                      <ContactButton
-                        key={contact.type}
-                        type={contact.type}
-                        link={contact.link}
-                        label={`${CONTACT_LABELS[contact.type]}: ${contact.value}`}
-                        primary={false}
-                      />
-                    );
-                  })}
-                </div>
+              {pro.personal_description && (
+                <p className="mt-4 text-sm text-cinza-texto leading-relaxed border-t border-gray-100 pt-4">
+                  {pro.personal_description}
+                </p>
               )}
 
-              {/* Redes sociais */}
-              {pro.socialNetworks.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="text-xs text-cinza-texto mb-2">Redes sociais</p>
-                  <div className="flex gap-2">
-                    {pro.socialNetworks.map((sn) => (
-                      <a
-                        key={sn.platform}
-                        href={sn.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={sn.platform}
-                        className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-azul-claro flex items-center justify-center transition-colors"
-                      >
-                        <span className="text-[10px] font-bold text-azul-noite">
-                          {SOCIAL_LABELS[sn.platform] ?? <ExternalLink size={13} />}
-                        </span>
-                      </a>
+              {/* Especialidades */}
+              {(specialties ?? []).length > 0 && (
+                <div className="mt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-cinza-texto mb-2">Especialidades</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(specialties as any[]).map((s: any) => (
+                      <span key={s.category} className="text-sm bg-azul-claro text-azul-principal px-3 py-1 rounded-full font-medium">
+                        {s.category}
+                      </span>
                     ))}
                   </div>
                 </div>
               )}
 
-              <p className="mt-4 text-xs text-cinza-texto leading-relaxed">
-                Negocie diretamente com o profissional. O Prumo não intermedia pagamentos.
-              </p>
+              {/* Afinidades */}
+              {(affinities ?? []).length > 0 && (
+                <div className="mt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-cinza-texto mb-2">Diferenciais</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(affinities as any[]).map((a: any) => (
+                      <span key={a.tag} className="text-xs border border-gray-200 text-cinza-texto px-2.5 py-1 rounded-full">
+                        {a.tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Breadcrumb de volta */}
+            {/* Portfólio */}
+            {(projects ?? []).length > 0 && (
+              <div className="bg-white rounded-card shadow-card p-6">
+                <h2 className="text-lg font-semibold text-azul-noite mb-4">Portfólio</h2>
+                <div className="space-y-6">
+                  {(projects as any[]).map((project: any) => {
+                    const images: any[] = (project.portfolio_images ?? []).sort((a: any, b: any) => a.order_in_project - b.order_in_project);
+                    return (
+                      <div key={project.id} className="border border-gray-100 rounded-lg overflow-hidden">
+                        {/* Galeria de fotos */}
+                        {images.length > 0 && (
+                          <div className="grid grid-cols-4 gap-0.5 h-40 bg-gray-100">
+                            {images.slice(0, 4).map((img: any, i: number) => (
+                              <div
+                                key={img.cloudinary_url}
+                                className={`relative overflow-hidden bg-linear-to-br from-azul-claro to-blue-100 ${i === 0 ? "col-span-2 row-span-2" : ""}`}
+                                style={i === 0 ? { gridRow: "span 2" } : {}}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={img.cloudinary_url} alt="" className="w-full h-full object-cover" />
+                                {i === 3 && images.length > 4 && (
+                                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                    <span className="text-white text-sm font-medium">+{images.length - 4}</span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Info do projeto */}
+                        <div className="p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                {project.is_featured && (
+                                  <span className="text-xs bg-laranja-obra/10 text-laranja-obra px-2 py-0.5 rounded-full font-medium">
+                                    Destaque
+                                  </span>
+                                )}
+                                <span className="text-xs text-cinza-texto">{project.category}</span>
+                                {project.city_executed && (
+                                  <span className="text-xs text-cinza-texto">· {project.city_executed}</span>
+                                )}
+                              </div>
+                              <h3 className="font-medium text-azul-noite text-sm">{project.title}</h3>
+                              {project.description && (
+                                <p className="text-xs text-cinza-texto mt-1 leading-relaxed">{project.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Avaliações */}
+            {(evals ?? []).length > 0 && (
+              <div className="bg-white rounded-card shadow-card p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-azul-noite">Avaliações</h2>
+                  {totalEvals > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <Star size={16} className="text-yellow-400 fill-yellow-400" />
+                      <span className="font-semibold text-azul-noite">{Number(avgRating).toFixed(1)}</span>
+                      <span className="text-sm text-cinza-texto">({totalEvals})</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  {(evals as any[]).map((ev: any) => {
+                    const contractorName = ev.profiles?.name ?? "Contratante";
+                    const evInitials = contractorName.split(" ").slice(0, 2).map((n: string) => n[0]).join("").toUpperCase();
+                    const responseText = ev.evaluation_responses?.[0]?.response_text ?? null;
+                    return (
+                      <div key={ev.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 text-cinza-texto text-xs font-semibold flex items-center justify-center shrink-0">
+                            {evInitials}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium text-azul-noite">{contractorName}</span>
+                              <div className="flex">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    size={11}
+                                    className={i < ev.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200"}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            {ev.comment && (
+                              <p className="text-sm text-cinza-texto leading-relaxed">{ev.comment}</p>
+                            )}
+                            {responseText && (
+                              <div className="mt-2 pl-3 border-l-2 border-azul-claro">
+                                <p className="text-xs text-azul-noite font-medium mb-0.5">Resposta do profissional:</p>
+                                <p className="text-xs text-cinza-texto leading-relaxed">{responseText}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Coluna lateral — Contato */}
+          <div className="space-y-4">
+
+            {/* Card contato */}
+            <div className="bg-white rounded-card shadow-card p-5 sticky top-24">
+              <p className="text-xs font-semibold uppercase tracking-wider text-cinza-texto mb-3">
+                Entrar em contato
+              </p>
+
+              {isAuthenticated ? (
+                <>
+                  {primaryChannel ? (
+                    <>
+                      <ContactButton
+                        type={primaryChannel.type as "WHATSAPP" | "PHONE" | "EMAIL"}
+                        link={getContactLink(primaryChannel.type, primaryChannel.value, primaryChannel.link_formatted)}
+                        label={`${CONTACT_LABELS[primaryChannel.type] ?? primaryChannel.type}: ${primaryChannel.value}`}
+                        primary
+                      />
+
+                      {secondaryChannels.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          {secondaryChannels.map((channel) => (
+                            <ContactButton
+                              key={channel.id}
+                              type={channel.type as "WHATSAPP" | "PHONE" | "EMAIL"}
+                              link={getContactLink(channel.type, channel.value, channel.link_formatted)}
+                              label={`${CONTACT_LABELS[channel.type] ?? channel.type}: ${channel.value}`}
+                              primary={false}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-sm text-cinza-texto text-center py-2">
+                      Nenhum canal de contato cadastrado.
+                    </p>
+                  )}
+
+                  {/* Redes sociais */}
+                  {(socials ?? []).length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <p className="text-xs text-cinza-texto mb-2">Redes sociais</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {(socials as any[]).map((sn: any) => (
+                          <a
+                            key={sn.platform}
+                            href={sn.handle_or_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={sn.platform}
+                            className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-azul-claro flex items-center justify-center transition-colors"
+                          >
+                            <span className="text-[10px] font-bold text-azul-noite">
+                              {SOCIAL_LABELS[sn.platform] ?? <ExternalLink size={13} />}
+                            </span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="mt-4 text-xs text-cinza-texto leading-relaxed">
+                    Negocie diretamente com o profissional. O Prumo não intermedia pagamentos.
+                  </p>
+                </>
+              ) : (
+                <div className="flex flex-col items-center text-center py-4 gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Lock size={18} className="text-cinza-texto" />
+                  </div>
+                  <p className="text-sm text-cinza-texto leading-snug">
+                    Faça login para ver as formas de contato deste profissional.
+                  </p>
+                  <a
+                    href={`/entrar?next=${encodeURIComponent(`/profissionais/${slug}`)}`}
+                    className="w-full bg-azul-principal hover:bg-azul-noite text-white rounded-lg py-2.5 text-sm font-medium text-center transition-colors"
+                  >
+                    Entrar
+                  </a>
+                  <a
+                    href="/cadastro"
+                    className="w-full border border-gray-200 hover:border-azul-principal text-azul-noite rounded-lg py-2.5 text-sm font-medium text-center transition-colors"
+                  >
+                    Criar conta grátis
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Voltar para listagem */}
             <a
               href="/profissionais"
               className="flex items-center gap-1 text-sm text-cinza-texto hover:text-azul-principal transition-colors"

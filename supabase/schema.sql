@@ -87,6 +87,7 @@ CREATE TABLE public.professional_profiles (
   trial_ends_at           TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 days'),
   subscription_paid_until TIMESTAMPTZ,
   stripe_customer_id      TEXT,
+  onboarding_completed_at TIMESTAMPTZ DEFAULT NULL,
   created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -665,3 +666,70 @@ CREATE POLICY "evaluation_responses_owner_insert" ON public.evaluation_responses
       AND pp.user_id = auth.uid()
     )
   );
+
+-- =============================================
+-- PROFILE ACTIVITY LOGS
+-- =============================================
+
+CREATE TABLE IF NOT EXISTS public.profile_activity_logs (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  professional_id UUID NOT NULL REFERENCES public.professional_profiles(id) ON DELETE CASCADE,
+  contractor_id   UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  event_type      TEXT NOT NULL CHECK (event_type IN ('PROFILE_VIEWED', 'CONTACT_VIEWED')),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_profile_activity_logs_professional_created
+  ON public.profile_activity_logs (professional_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_profile_activity_logs_contractor
+  ON public.profile_activity_logs (contractor_id);
+
+ALTER TABLE public.profile_activity_logs ENABLE ROW LEVEL SECURITY;
+
+-- Profissional lê apenas logs do próprio perfil
+CREATE POLICY "activity_logs_professional_read" ON public.profile_activity_logs
+  FOR SELECT USING (
+    professional_id IN (
+      SELECT id FROM public.professional_profiles WHERE user_id = auth.uid()
+    )
+  );
+
+-- Contratante insere apenas com seu próprio contractor_id
+CREATE POLICY "activity_logs_contractor_insert" ON public.profile_activity_logs
+  FOR INSERT WITH CHECK (contractor_id = auth.uid());
+
+-- =============================================
+-- STORAGE
+-- =============================================
+
+-- Buckets públicos para uploads de mídia
+INSERT INTO storage.buckets (id, name, public) VALUES ('profiles', 'profiles', true) ON CONFLICT DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('portfolio', 'portfolio', true) ON CONFLICT DO NOTHING;
+
+-- Profiles: leitura pública, escrita/deleção apenas do próprio usuário
+CREATE POLICY "Profile photos public read"
+  ON storage.objects FOR SELECT TO public USING (bucket_id = 'profiles');
+CREATE POLICY "Profile photos owner insert"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'profiles' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY "Profile photos owner update"
+  ON storage.objects FOR UPDATE TO authenticated
+  USING (bucket_id = 'profiles' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY "Profile photos owner delete"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'profiles' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Portfolio: mesma estrutura
+CREATE POLICY "Portfolio images public read"
+  ON storage.objects FOR SELECT TO public USING (bucket_id = 'portfolio');
+CREATE POLICY "Portfolio images owner insert"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'portfolio' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY "Portfolio images owner update"
+  ON storage.objects FOR UPDATE TO authenticated
+  USING (bucket_id = 'portfolio' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY "Portfolio images owner delete"
+  ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'portfolio' AND (storage.foldername(name))[1] = auth.uid()::text);
+

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "./painel/sidebar";
+import { OnboardingTour } from "./painel/onboarding-tour";
 
 export default async function ProfessionalLayout({
   children,
@@ -23,12 +24,12 @@ export default async function ProfessionalLayout({
     .single();
 
   if (!profile || profile.role !== "professional") {
-    redirect("/");
+    redirect(process.env.NEXT_PUBLIC_MAIN_URL ?? "/");
   }
 
   const { data: professionalProfile } = await supabase
     .from("professional_profiles")
-    .select("id, slug, status, subscription_status, photo_url")
+    .select("id, slug, status, subscription_status, photo_url, onboarding_completed_at")
     .eq("user_id", user.id)
     .single();
 
@@ -37,6 +38,7 @@ export default async function ProfessionalLayout({
   return (
     <div className="min-h-screen flex bg-[#F8FAFC]">
       <Sidebar profile={{ full_name: displayName }} professionalProfile={professionalProfile} />
+      <OnboardingTour open={!professionalProfile?.onboarding_completed_at} />
       <main className="flex-1 min-w-0">{children}</main>
     </div>
   );

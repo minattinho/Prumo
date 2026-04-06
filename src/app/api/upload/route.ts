@@ -1,25 +1,34 @@
-import { v2 as cloudinary } from "cloudinary";
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
 export async function POST(request: Request) {
-  const { folder } = await request.json();
+  const formData = await request.formData();
+  const file = formData.get("file") as File | null;
+  const folder = formData.get("folder") as string | null;
 
-  const timestamp = Math.round(new Date().getTime() / 1000);
-  const signature = cloudinary.utils.api_sign_request(
-    { timestamp, folder },
-    process.env.CLOUDINARY_API_SECRET!
-  );
+  if (!file || !folder) {
+    return NextResponse.json({ error: "Arquivo ou pasta não informados" }, { status: 400 });
+  }
 
-  return NextResponse.json({
-    timestamp,
-    signature,
-    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    apiKey: process.env.CLOUDINARY_API_KEY,
-  });
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  }
+
+  const ext = file.name.split(".").pop() ?? "jpg";
+  const filename = `${user.id}/${Date.now()}.${ext}`;
+  const bucket = folder === "profiles" ? "profiles" : "portfolio";
+
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(filename, file, { cacheControl: "3600", upsert: true });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filename);
+
+  return NextResponse.json({ url: publicUrl });
 }

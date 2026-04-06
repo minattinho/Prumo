@@ -14,7 +14,7 @@ export default async function MinhaContaPage() {
   const [{ data: profile }, { data: contractorProfile }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, email, phone")
+      .select("name, email, phone")
       .eq("id", user!.id)
       .single(),
     supabase
@@ -63,7 +63,7 @@ export default async function MinhaContaPage() {
       const { data: prosData } = await supabase
         .from("professional_profiles")
         .select(
-          "id, slug, city, photo_url, profiles(full_name), professional_specialties(category)"
+          "id, slug, city, photo_url, profiles(full_name:name), professional_specialties(category)"
         )
         .in("id", allProIds);
 
@@ -87,7 +87,7 @@ export default async function MinhaContaPage() {
   return (
     <MinhaContaClient
       profile={{
-        full_name: profile?.full_name ?? null,
+        full_name: (profile as any)?.name ?? null,
         email: profile?.email ?? user?.email ?? null,
         phone: profile?.phone ?? null,
       }}

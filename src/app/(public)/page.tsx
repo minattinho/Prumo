@@ -20,8 +20,6 @@ import {
   Wind,
   ArrowRight,
   CheckCircle2,
-  MapPin,
-  ChevronRight,
   Users,
   Award,
   Clock,
@@ -73,49 +71,20 @@ const TRUST_ITEMS = [
     icon: ShieldCheck,
     title: "Profissionais verificados",
     description: "CPF validado e verificação de antecedentes antes da ativação de qualquer perfil.",
-    stat: "100%",
-    statLabel: "verificados",
   },
   {
     icon: Star,
     title: "Avaliações reais",
     description: "Só avalia quem contratou de verdade. Zero avaliação falsa ou comprada na plataforma.",
-    stat: "4.8",
-    statLabel: "média geral",
   },
   {
     icon: TrendingUp,
     title: "Portfólio com fotos reais",
     description: "Veja obras executadas antes de decidir. Sem foto de stock ou promessas vazias.",
-    stat: "5k+",
-    statLabel: "fotos de obras",
   },
 ];
 
 
-const TESTIMONIALS = [
-  {
-    name: "Ana Paula S.",
-    city: "São Paulo, SP",
-    rating: 5,
-    text: "Encontrei um eletricista excelente em menos de 10 minutos. Portfólio impressionante e preço justo.",
-    service: "Elétrica",
-  },
-  {
-    name: "Carlos M.",
-    city: "Belo Horizonte, MG",
-    rating: 5,
-    text: "Já usei 3 profissionais pelo Prumo. Todos verificados, todos entregaram o prometido. Recomendo demais.",
-    service: "Hidráulica",
-  },
-  {
-    name: "Fernanda L.",
-    city: "Rio de Janeiro, RJ",
-    rating: 5,
-    text: "O Prumo mudou como contrato serviços. Ver o portfólio antes de fechar dá uma segurança enorme.",
-    service: "Acabamento",
-  },
-];
 
 export default function HomePage() {
   return (
@@ -149,12 +118,6 @@ export default function HomePage() {
         />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-medium text-blue-200 mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            Mais de 500 profissionais ativos em todo o Brasil
-          </div>
-
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight mb-5">
             Encontre o profissional<br className="hidden sm:block" />
             <span className="text-laranja-obra"> certo para sua obra.</span>
@@ -168,17 +131,17 @@ export default function HomePage() {
           <HeroSearch />
         </div>
 
-        {/* Stats bar */}
+        {/* Feature bar */}
         <div className="relative border-t border-white/10 bg-white/5">
           <div className="max-w-4xl mx-auto px-4 py-5 grid grid-cols-3 divide-x divide-white/10">
             {[
-              { value: "500+", label: "Profissionais ativos" },
-              { value: "4.8★", label: "Avaliação média" },
-              { value: "13", label: "Categorias de serviços" },
-            ].map(({ value, label }) => (
+              { label: "Contato direto", sublabel: "Sem intermediários ou taxas" },
+              { label: "Portfólio verificado", sublabel: "Fotos de obras reais" },
+              { label: `${CATEGORIES.length} categorias`, sublabel: "De construção a projeto" },
+            ].map(({ label, sublabel }) => (
               <div key={label} className="text-center px-4">
-                <div className="text-xl sm:text-2xl font-bold text-white">{value}</div>
-                <div className="text-xs text-blue-300 mt-0.5">{label}</div>
+                <div className="text-sm sm:text-base font-bold text-white">{label}</div>
+                <div className="text-xs text-blue-300 mt-0.5">{sublabel}</div>
               </div>
             ))}
           </div>
@@ -192,7 +155,7 @@ export default function HomePage() {
             <div>
               <p className="text-xs font-semibold text-laranja-obra uppercase tracking-widest mb-2">Categorias</p>
               <h2 className="text-2xl sm:text-3xl font-bold text-azul-noite">O que você precisa?</h2>
-              <p className="text-cinza-texto mt-2 text-sm">13 especialidades para cada etapa do seu imóvel</p>
+              <p className="text-cinza-texto mt-2 text-sm">{CATEGORIES.length} especialidades para cada etapa do seu imóvel</p>
             </div>
             <Link
               href="/profissionais"
@@ -280,58 +243,13 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {TRUST_ITEMS.map(({ icon: Icon, title, description, stat, statLabel }) => (
+            {TRUST_ITEMS.map(({ icon: Icon, title, description }) => (
               <div key={title} className="bg-white/5 border border-white/10 rounded-2xl p-7 hover:bg-white/10 hover:border-white/20 transition-all duration-200 group cursor-default">
-                <div className="flex items-start justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-                    <Icon size={22} className="text-blue-300" />
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-white">{stat}</div>
-                    <div className="text-xs text-blue-400">{statLabel}</div>
-                  </div>
+                <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-5">
+                  <Icon size={22} className="text-blue-300" />
                 </div>
                 <h3 className="font-bold text-white mb-2">{title}</h3>
                 <p className="text-sm text-blue-300 leading-relaxed">{description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── DEPOIMENTOS ──────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 px-4 bg-[#F8FAFC]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-xs font-semibold text-laranja-obra uppercase tracking-widest mb-2">Depoimentos</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-azul-noite">Quem usa, recomenda</h2>
-            <p className="text-cinza-texto mt-2 text-sm">Histórias reais de contratantes que encontraram o profissional certo</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {TESTIMONIALS.map(({ name, city, rating, text, service }) => (
-              <div key={name} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-                {/* Stars */}
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: rating }).map((_, i) => (
-                    <Star key={i} size={14} className="text-amber-400 fill-amber-400" />
-                  ))}
-                </div>
-
-                <p className="text-sm text-gray-700 leading-relaxed mb-5 italic">&ldquo;{text}&rdquo;</p>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-semibold text-azul-noite">{name}</div>
-                    <div className="flex items-center gap-1 text-xs text-cinza-texto mt-0.5">
-                      <MapPin size={11} />
-                      {city}
-                    </div>
-                  </div>
-                  <span className="text-xs font-medium bg-azul-claro text-azul-principal px-2.5 py-1 rounded-full">
-                    {service}
-                  </span>
-                </div>
               </div>
             ))}
           </div>

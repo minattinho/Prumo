@@ -73,7 +73,7 @@ function StarRating({
           key={star}
           type="button"
           onClick={() => onChange(star)}
-          className={`w-8 h-8 transition-colors ${
+          className={`w-8 h-8 transition-colors cursor-pointer ${
             star <= value ? "text-amber-400" : "text-gray-200 hover:text-amber-200"
           }`}
         >
@@ -227,7 +227,9 @@ function ConfiguracoesTab({
   return (
     <div className="max-w-lg space-y-6">
       <form onSubmit={handleSave} className="bg-white rounded-card shadow-card p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-azul-noite">Dados pessoais</h3>
+        <div className="pb-3 border-b border-gray-100">
+          <h3 className="text-sm font-semibold text-azul-noite">Dados pessoais</h3>
+        </div>
 
         <div>
           <label className="block text-xs font-medium text-azul-noite mb-1.5">
@@ -281,7 +283,9 @@ function ConfiguracoesTab({
       </form>
 
       <div className="bg-white rounded-card shadow-card p-5">
-        <h3 className="text-sm font-semibold text-azul-noite mb-1">Senha</h3>
+        <div className="pb-3 border-b border-gray-100 mb-3">
+          <h3 className="text-sm font-semibold text-azul-noite">Senha</h3>
+        </div>
         <p className="text-xs text-cinza-texto mb-4">
           Enviaremos um link de redefinição para seu e-mail.
         </p>
@@ -303,6 +307,20 @@ function ConfiguracoesTab({
   );
 }
 
+function UserInitialsAvatar({ name }: { name: string | null }) {
+  const initials = (name ?? "U")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+  return (
+    <div className="w-12 h-12 rounded-full bg-azul-principal text-white flex items-center justify-center text-base font-semibold shrink-0">
+      {initials}
+    </div>
+  );
+}
+
 export function MinhaContaClient({
   profile,
   contractorId,
@@ -319,24 +337,29 @@ export function MinhaContaClient({
     <>
       {/* Header */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <h1 className="text-2xl font-bold text-azul-noite">
-          Olá, {profile.full_name?.split(" ")[0] ?? ""}!
-        </h1>
-        <p className="text-sm text-cinza-texto mt-0.5">Gerencie sua conta e histórico de contatos.</p>
+        <div className="flex items-center gap-4">
+          <UserInitialsAvatar name={profile.full_name} />
+          <div>
+            <h1 className="text-2xl font-bold text-azul-noite">
+              Olá, {profile.full_name?.split(" ")[0] ?? ""}!
+            </h1>
+            <p className="text-sm text-cinza-texto mt-0.5">Gerencie sua conta e histórico de contatos.</p>
+          </div>
+        </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
           {[
-            { icon: Users, value: contacts.length, label: "Profissionais contactados" },
-            { icon: ClipboardCheck, value: evaluations.length, label: "Avaliações feitas" },
-            { icon: Clock, value: pendingContacts.length, label: "Pendentes de avaliação" },
-          ].map(({ icon: Icon, value, label }) => (
-            <div key={label} className="bg-white rounded-card shadow-card p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-azul-claro flex items-center justify-center shrink-0">
-                <Icon className="w-5 h-5 text-azul-principal" />
+            { icon: Users, value: contacts.length, label: "Profissionais contactados", accent: false },
+            { icon: ClipboardCheck, value: evaluations.length, label: "Avaliações feitas", accent: false },
+            { icon: Clock, value: pendingContacts.length, label: "Pendentes de avaliação", accent: pendingContacts.length > 0 },
+          ].map(({ icon: Icon, value, label, accent }) => (
+            <div key={label} className={`rounded-card shadow-card p-4 flex items-center gap-3 ${accent ? "bg-orange-50 border border-orange-100" : "bg-white"}`}>
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${accent ? "bg-laranja-obra/10" : "bg-azul-claro"}`}>
+                <Icon className={`w-5 h-5 ${accent ? "text-laranja-obra" : "text-azul-principal"}`} />
               </div>
               <div>
-                <p className="text-xl font-bold text-azul-noite">{value}</p>
+                <p className={`text-xl font-bold ${accent ? "text-laranja-obra" : "text-azul-noite"}`}>{value}</p>
                 <p className="text-xs text-cinza-texto leading-tight">{label}</p>
               </div>
             </div>
@@ -345,18 +368,18 @@ export function MinhaContaClient({
 
         {/* Tabs */}
         <Tabs.Root defaultValue="overview" className="mt-8">
-          <Tabs.List className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit mb-6 flex-wrap">
+          <Tabs.List className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden w-full sm:w-fit">
             {[
               { value: "overview", label: "Visão Geral" },
-              { value: "professionals", label: `Profissionais (${contacts.length})` },
-              { value: "evaluations", label: `Avaliações (${evaluations.length})` },
-              { value: "pending", label: `Pendentes (${pendingContacts.length})` },
+              { value: "professionals", label: contacts.length > 0 ? `Profissionais (${contacts.length})` : "Profissionais" },
+              { value: "evaluations", label: evaluations.length > 0 ? `Avaliações (${evaluations.length})` : "Avaliações" },
+              { value: "pending", label: pendingContacts.length > 0 ? `Pendentes (${pendingContacts.length})` : "Pendentes" },
               { value: "settings", label: "Configurações" },
             ].map(({ value, label }) => (
               <Tabs.Trigger
                 key={value}
                 value={value}
-                className="px-4 py-2 text-sm font-medium rounded-md text-cinza-texto transition-colors data-[state=active]:bg-white data-[state=active]:text-azul-principal data-[state=active]:shadow-sm"
+                className="px-4 py-2 text-sm font-medium rounded-md text-cinza-texto transition-colors data-[state=active]:bg-white data-[state=active]:text-azul-principal data-[state=active]:shadow-sm shrink-0 cursor-pointer"
               >
                 {label}
               </Tabs.Trigger>
@@ -403,7 +426,7 @@ export function MinhaContaClient({
                         {!evaluatedIds.has(c.professional_id) && (
                           <button
                             onClick={() => setEvaluateContact(c)}
-                            className="text-xs text-azul-principal font-medium hover:underline"
+                            className="text-xs bg-azul-claro text-azul-principal font-medium px-2.5 py-1.5 rounded-md hover:bg-azul-principal hover:text-white transition-colors cursor-pointer"
                           >
                             Avaliar
                           </button>
@@ -415,14 +438,14 @@ export function MinhaContaClient({
               )}
             </div>
 
-            <div className="bg-azul-claro rounded-card p-5 flex items-center justify-between">
+            <div className="bg-azul-noite rounded-card p-5 flex items-center justify-between gap-4">
               <div>
-                <p className="font-semibold text-azul-noite">Precisa de um profissional?</p>
-                <p className="text-sm text-cinza-texto mt-0.5">Encontre o especialista certo para sua obra.</p>
+                <p className="font-semibold text-white">Precisa de um profissional?</p>
+                <p className="text-sm text-azul-medio mt-0.5">Encontre o especialista certo para sua obra.</p>
               </div>
               <Link
                 href="/profissionais"
-                className="shrink-0 bg-azul-principal hover:bg-azul-noite text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+                className="shrink-0 bg-laranja-obra hover:bg-orange-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
               >
                 Buscar profissionais
               </Link>
@@ -453,7 +476,7 @@ export function MinhaContaClient({
                       </p>
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                         {c.professional?.professional_specialties?.[0] && (
-                          <span className="text-xs text-cinza-texto">
+                          <span className="text-xs bg-azul-claro text-azul-principal px-2 py-0.5 rounded-full font-medium">
                             {c.professional.professional_specialties[0].category}
                           </span>
                         )}
@@ -472,7 +495,7 @@ export function MinhaContaClient({
                       {c.professional?.slug && (
                         <Link
                           href={`/profissionais/${c.professional.slug}`}
-                          className="text-cinza-texto hover:text-azul-principal transition-colors"
+                          className="text-cinza-texto hover:text-azul-principal transition-colors cursor-pointer"
                           title="Ver perfil"
                         >
                           <ExternalLink className="w-4 h-4" />
@@ -524,7 +547,7 @@ export function MinhaContaClient({
                           {[1, 2, 3, 4, 5].map((s) => (
                             <Star
                               key={s}
-                              className={`w-4 h-4 ${s <= ev.rating ? "text-amber-400 fill-amber-400" : "text-gray-200 fill-gray-200"}`}
+                              className={`w-5 h-5 ${s <= ev.rating ? "text-amber-400 fill-amber-400" : "text-gray-200 fill-gray-200"}`}
                             />
                           ))}
                         </div>
@@ -584,13 +607,13 @@ export function MinhaContaClient({
       {/* Evaluate Modal */}
       <Dialog.Root open={!!evaluateContact} onOpenChange={(open) => !open && setEvaluateContact(null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-card shadow-2xl p-6">
+          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40 transition-opacity duration-200 data-[state=closed]:opacity-0" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-card shadow-2xl p-6 transition-all duration-200 data-[state=closed]:opacity-0 data-[state=closed]:scale-95">
             <div className="flex items-center justify-between mb-4">
               <Dialog.Title className="text-base font-semibold text-azul-noite">
                 Avaliar profissional
               </Dialog.Title>
-              <Dialog.Close className="text-cinza-texto hover:text-azul-noite transition-colors">
+              <Dialog.Close className="text-cinza-texto hover:text-azul-noite transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </Dialog.Close>
             </div>

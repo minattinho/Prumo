@@ -12,6 +12,7 @@ import {
   CreditCard,
   Settings,
   LogOut,
+  Activity,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/layout/logo";
@@ -33,6 +34,7 @@ const navItems = [
   { label: "Serviços",      href: "/painel/servicos",      icon: Briefcase,       exact: false },
   { label: "Solicitações",  href: "/painel/solicitacoes",  icon: MessageSquare,   exact: false },
   { label: "Avaliações",    href: "/painel/avaliacoes",    icon: Star,            exact: false },
+  { label: "Acessos",       href: "/painel/acessos",       icon: Activity,        exact: false },
   { label: "Assinatura",    href: "/painel/assinatura",    icon: CreditCard,      exact: false },
   { label: "Configurações", href: "/painel/configuracoes", icon: Settings,        exact: false },
 ];

@@ -8,9 +8,10 @@ import { ChevronDown, User as UserIcon, LayoutDashboard, LogOut } from "lucide-r
 
 interface HeaderUserMenuProps {
   user: User;
+  role: string;
 }
 
-export function HeaderUserMenu({ user }: HeaderUserMenuProps) {
+export function HeaderUserMenu({ user, role }: HeaderUserMenuProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -46,22 +47,26 @@ export function HeaderUserMenu({ user }: HeaderUserMenuProps) {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-10 z-20 w-48 bg-white border border-gray-100 rounded-card shadow-card py-1">
-            <a
-              href="/minha-conta"
-              className="flex items-center gap-2 px-4 py-2.5 text-sm text-azul-noite hover:bg-azul-claro transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              <UserIcon size={15} />
-              Minha conta
-            </a>
-            <a
-              href="/painel"
-              className="flex items-center gap-2 px-4 py-2.5 text-sm text-azul-noite hover:bg-azul-claro transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              <LayoutDashboard size={15} />
-              Painel profissional
-            </a>
+            {role === "contractor" && (
+              <a
+                href="/minha-conta"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-azul-noite hover:bg-azul-claro transition-colors"
+                onClick={() => setOpen(false)}
+              >
+                <UserIcon size={15} />
+                Minha conta
+              </a>
+            )}
+            {role === "professional" && (
+              <a
+                href="/painel"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-azul-noite hover:bg-azul-claro transition-colors"
+                onClick={() => setOpen(false)}
+              >
+                <LayoutDashboard size={15} />
+                Painel profissional
+              </a>
+            )}
             <div className="my-1 border-t border-gray-100" />
             <button
               onClick={handleSignOut}

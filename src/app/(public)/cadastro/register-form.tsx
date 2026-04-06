@@ -6,10 +6,20 @@ import { createClient } from "@/lib/supabase/client";
 export function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  function formatPhone(value: string) {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10)
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,7 +37,7 @@ export function RegisterForm() {
       email,
       password,
       options: {
-        data: { full_name: name },
+        data: { full_name: name, phone: phone || null },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -58,8 +68,8 @@ export function RegisterForm() {
         </h2>
         <p className="text-sm text-cinza-texto">
           Enviamos um link de confirmação para{" "}
-          <strong className="text-azul-noite">{email}</strong>. Abre lá e
-          clica no link para ativar sua conta.
+          <strong className="text-azul-noite">{email}</strong>. Abre lá e clica no
+          link para ativar sua conta.
         </p>
       </div>
     );
@@ -68,10 +78,7 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-azul-noite mb-1"
-        >
+        <label htmlFor="name" className="block text-sm font-medium text-azul-noite mb-1">
           Nome completo
         </label>
         <input
@@ -87,10 +94,7 @@ export function RegisterForm() {
       </div>
 
       <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-azul-noite mb-1"
-        >
+        <label htmlFor="email" className="block text-sm font-medium text-azul-noite mb-1">
           E-mail
         </label>
         <input
@@ -106,10 +110,23 @@ export function RegisterForm() {
       </div>
 
       <div>
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-azul-noite mb-1"
-        >
+        <label htmlFor="phone" className="block text-sm font-medium text-azul-noite mb-1">
+          Telefone{" "}
+          <span className="text-cinza-texto font-normal">(opcional)</span>
+        </label>
+        <input
+          id="phone"
+          type="tel"
+          autoComplete="tel"
+          value={phone}
+          onChange={(e) => setPhone(formatPhone(e.target.value))}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-azul-noite placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent"
+          placeholder="(11) 99999-9999"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-azul-noite mb-1">
           Senha
         </label>
         <input
@@ -125,9 +142,7 @@ export function RegisterForm() {
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
-          {error}
-        </p>
+        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
       )}
 
       <button
@@ -140,14 +155,9 @@ export function RegisterForm() {
 
       <p className="text-xs text-cinza-texto text-center">
         Ao criar sua conta, você concorda com nossos{" "}
-        <a href="/termos" className="underline hover:text-azul-principal">
-          Termos de Uso
-        </a>{" "}
+        <a href="/termos" className="underline hover:text-azul-principal">Termos de Uso</a>{" "}
         e{" "}
-        <a href="/privacidade" className="underline hover:text-azul-principal">
-          Política de Privacidade
-        </a>
-        .
+        <a href="/privacidade" className="underline hover:text-azul-principal">Política de Privacidade</a>.
       </p>
     </form>
   );

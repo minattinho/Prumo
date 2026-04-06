@@ -274,27 +274,15 @@ function ProjectModal({
     setUploading(true);
 
     try {
-      const credRes = await fetch("/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ folder: "portfolio" }),
-      });
-      const { timestamp, signature, cloudName: cn, apiKey } = await credRes.json();
-
       const uploaded: string[] = [];
       for (const file of files) {
         const fd = new FormData();
         fd.append("file", file);
-        fd.append("timestamp", String(timestamp));
-        fd.append("signature", signature);
-        fd.append("api_key", apiKey);
         fd.append("folder", "portfolio");
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cn}/image/upload`, {
-          method: "POST",
-          body: fd,
-        });
-        const { secure_url } = await res.json();
-        uploaded.push(secure_url);
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        const { url, error: uploadError } = await res.json();
+        if (uploadError) throw new Error(uploadError);
+        uploaded.push(url);
       }
       setImages((prev) => [...prev, ...uploaded]);
     } catch {

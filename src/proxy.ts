@@ -5,8 +5,37 @@ const PROFESSIONAL_ROUTES = ["/painel"];
 const CONTRACTOR_ROUTES = ["/minha-conta"];
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  const host =
+    request.headers.get("x-forwarded-host") ??
+    request.headers.get("host") ??
+    "";
+  const { pathname } = request.nextUrl;
 
+  // Dev: skip subdomain routing
+  if (!host.includes("localhost") && !host.includes("127.0.0.1")) {
+    const isApp = host.startsWith("app.");
+
+    if (isApp) {
+      if (pathname === "/") {
+        return NextResponse.redirect(new URL("/painel", request.url));
+      }
+      const allowed = ["/painel", "/entrar", "/auth/callback", "/api"];
+      if (!allowed.some((p) => pathname.startsWith(p))) {
+        const mainUrl = request.nextUrl.clone();
+        mainUrl.host = host.replace(/^app\./, "");
+        return NextResponse.redirect(mainUrl);
+      }
+    } else {
+      if (pathname.startsWith("/painel")) {
+        const appUrl = request.nextUrl.clone();
+        appUrl.host = `app.${host}`;
+        return NextResponse.redirect(appUrl);
+      }
+    }
+  }
+
+  // Supabase session refresh
+  let response = NextResponse.next({ request });
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -28,12 +57,9 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Refresh da sessão — importante manter antes de qualquer checagem
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
 
   const isProfessionalRoute = PROFESSIONAL_ROUTES.some((r) =>
     pathname.startsWith(r)
