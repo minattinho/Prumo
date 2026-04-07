@@ -1,0 +1,28 @@
+name: agent-instagram-post
+on:
+  schedule:
+    - cron: "0 12 * * *"   # Todo dia ao meio-dia UTC (9h BRT)
+    - cron: "0 21 * * *"   # Todo dia as 21h UTC (18h BRT)
+  workflow_dispatch:       # Rodar manualmente pra testar
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish next post
+        run: python scripts/agent_post.py
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Commit published post
+        run: |
+          git config user.name "prumo-bot"
+          git config user.email "bot@prumo.com"
+          git add instagram/queue/ instagram/published/
+          git commit -m "chore(instagram): post publicado pelo agent [skip ci]" || true
+          git push

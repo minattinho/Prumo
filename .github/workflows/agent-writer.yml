@@ -1,0 +1,38 @@
+name: agent-content-writer
+on:
+  schedule:
+    - cron: "0 9 * * 1"   # Toda segunda-feira as 9h UTC (6h BRT)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Generate new post
+        run: python scripts/agent_writer.py
+        env:
+          LLM_PROVIDER: openrouter
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          LLM_MODEL: qwen/qwen3.6-plus:free
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Commit new post
+        run: |
+          git config user.name "prumo-bot"
+          git config user.email "bot@prumo.com"
+          git add instagram/queue/
+          git commit -m "feat(instagram): novo post gerado pelo agent [skip ci]" || true
+          git push

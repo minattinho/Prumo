@@ -1,0 +1,38 @@
+name: agent-analytics
+on:
+  schedule:
+    - cron: "0 15 * * 0"   # Todo domingo as 15h UTC (12h BRT)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run analytics
+        run: python scripts/agent_analytics.py
+        env:
+          LLM_PROVIDER: openrouter
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          LLM_MODEL: qwen/qwen3.6-plus:free
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Commit analytics report
+        run: |
+          git config user.name "prumo-bot"
+          git config user.email "bot@prumo.com"
+          git add instagram/analytics/
+          git commit -m "chore(instagram): relatorio de analytics [skip ci]" || true
+          git push
