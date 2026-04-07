@@ -86,10 +86,10 @@ def _ollama(system_prompt, user_message, model=None):
 
 def notify_discord(message):
     """Envia notificação pro Discord webhook."""
+    import urllib.error
     if not config.DISCORD_WEBHOOK:
-        config.log("Discord webhook não configurado, pulando notificação.", "WARN")
+        config.log("Discord webhook não configurado, pulando notificação.")
         return
-    import urllib.request
     payload = json.dumps({"content": message}).encode()
     try:
         req = urllib.request.Request(
@@ -97,7 +97,12 @@ def notify_discord(message):
             data=payload,
             headers={"Content-Type": "application/json"},
         )
-        with urllib.request.urlopen(req) as resp:
+        with urllib.request.urlopen(req, timeout=10) as resp:
             config.log(f"Notificação Discord enviada (status {resp.status})")
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            config.log(f"Discord 403: webhook URL invalidado ou deletado. Verifique o secret DISCORD_WEBHOOK.", "ERROR")
+        else:
+            config.log(f"Discord HTTP Error {e.code}: {e.reason}", "ERROR")
     except Exception as e:
         config.log(f"Erro ao enviar notificação Discord: {e}", "ERROR")

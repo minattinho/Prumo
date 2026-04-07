@@ -49,10 +49,26 @@ O output deve ser SO o conteudo do post em markdown, sem comentarios extras.
 """
 
 config.log(f"Gerando post #{next_num} via {config.LLM_PROVIDER}...")
-post_content = chat(
-    system_prompt="Voce e um social media manager especializado em criar conteúdo para Instagram de marcas brasileiras de tecnologia e servicos.",
-    user_message=prompt,
-)
+
+import time
+import urllib.error
+for attempt in range(3):
+    try:
+        post_content = chat(
+            system_prompt="Voce e um social media manager especializado em criar conteúdo para Instagram de marcas brasileiras de tecnologia e servicos.",
+            user_message=prompt,
+        )
+        break
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            wait = 5 * (attempt + 1)
+            config.log(f"Rate limit (429). Esperando {wait}s antes de tentar novamente...", "WARN")
+            time.sleep(wait)
+        else:
+            raise
+else:
+    config.log("Falha apos 3 tentativas devido a rate limit.", "ERROR")
+    sys.exit(1)
 
 # Salva na fila
 filename = f"post-{next_num:02d}-generated.md"
