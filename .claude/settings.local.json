@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv instagram/ ai/)",
+      "Bash(mv scripts/ ai/scripts)",
+      "Bash(mv .claude/ ai/claude)"
+    ]
+  }
+}

@@ -19,10 +19,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install deps
-        run: pip install -r scripts/requirements.txt
+        run: pip install -r ai/scripts/requirements.txt
 
       - name: Run scheduler
-        run: python scripts/agent_scheduler.py
+        run: python ai/scripts/agent_scheduler.py
         env:
           LLM_PROVIDER: openrouter
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
@@ -33,6 +33,6 @@ jobs:
         run: |
           git config user.name "prumo-bot"
           git config user.email "bot@prumo.com"
-          git add instagram/
-          git commit -m "feat(instagram): scheduler atualizou conteudo [skip ci]" || true
+          git add ai/content/instagram/
+          git commit -m "feat(ai): scheduler atualizou conteudo [skip ci]" || true
           git push

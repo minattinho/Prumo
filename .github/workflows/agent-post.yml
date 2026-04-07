@@ -14,8 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r ai/scripts/requirements.txt
+
       - name: Publish next post
-        run: python scripts/agent_post.py
+        run: python ai/scripts/agent_post.py
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 
@@ -23,6 +31,6 @@ jobs:
         run: |
           git config user.name "prumo-bot"
           git config user.email "bot@prumo.com"
-          git add instagram/queue/ instagram/published/
-          git commit -m "chore(instagram): post publicado pelo agent [skip ci]" || true
+          git add ai/content/instagram/queue/ ai/content/instagram/published/
+          git commit -m "chore(ai): post publicado pelo agent [skip ci]" || true
           git push

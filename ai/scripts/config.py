@@ -8,7 +8,7 @@ from pathlib import Path
 
 # Paths
 ROOT = Path(__file__).resolve().parent.parent
-INSTAGRAM_DIR = ROOT / "instagram"
+INSTAGRAM_DIR = ROOT / "ai" / "content" / "instagram"
 POST_QUEUE = INSTAGRAM_DIR / "queue"
 PUBLISHED_DIR = INSTAGRAM_DIR / "published"
 ANALYTICS_DIR = INSTAGRAM_DIR / "analytics"
