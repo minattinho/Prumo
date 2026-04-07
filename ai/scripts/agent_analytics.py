@@ -3,10 +3,12 @@ Agent: Analytics
 Funcao: Analisa posts publicados e gera relatorio de desempenho.
 Enquanto o Instagram API nao esta disponivel, gera relatorios da fila de conteúdo.
 """
-import sys
-sys.path.insert(0, "scripts")
+import os, sys
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+
 import config
-from scripts.llm import chat, notify_discord
+from llm import chat, notify_discord
 from datetime import datetime
 import json
 
@@ -51,7 +53,6 @@ ANALISE:
 Output: faca uma analise concisa em portugues brasileiro.
 """
 
-from scripts.llm import chat
 analysis = chat(
     system_prompt="Voce e um especialista em estrategia de conteudo para Instagram de startups brasileiras.",
     user_message=analysis_prompt,

@@ -3,9 +3,12 @@ Agent: Instagram Poster
 Funcao: Pega o proximo post da fila e marca como publicado.
 Quando Instagram API estiver disponivel, faz o posting automatico.
 """
-import sys
-sys.path.insert(0, "scripts")
+import os, sys
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+
 import config
+from llm import notify_discord
 from datetime import datetime
 
 config.log("=== AGENT: Instagram Poster ===")
@@ -18,7 +21,6 @@ if post_file is None:
 
 content, published_path = config.mark_as_published(post_file)
 
-# Extrai dados do post para log
 lines = content.strip().split("\n")
 title = lines[0] if lines else "Post desconhecido"
 
@@ -29,7 +31,6 @@ message = (
     f"Publicado pelo Agent Instagram Poster"
 )
 
-from llm import notify_discord
 notify_discord(message)
 
 config.log(f"Post publicado: {published_path.name}")

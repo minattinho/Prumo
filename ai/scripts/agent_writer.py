@@ -3,12 +3,13 @@ Agent: Content Writer
 Funcao: Gera novos posts para o Instagram do Prumo via LLM (Groq gratis).
 Salva direto na pasta instagram/queue/ para revisao e publicacao.
 """
-import sys
-sys.path.insert(0, "scripts")
+import os, sys
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+
 import config
-from scripts.llm import chat, notify_discord
+from llm import chat, notify_discord
 from datetime import datetime
-from pathlib import Path
 
 config.log("=== AGENT: Content Writer ===")
 

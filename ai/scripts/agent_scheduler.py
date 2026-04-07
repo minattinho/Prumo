@@ -3,11 +3,14 @@ Agent: Scheduler
 Funcao: Verifica a fila de posts e gera conteudo extra se estiver vazia.
 Garante que sempre haja conteudo pronto para publicacao automatica.
 """
-import sys
-sys.path.insert(0, "scripts")
+import os, sys
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, SCRIPT_DIR)
+
 import config
-from scripts.llm import notify_discord
+from llm import notify_discord
 from datetime import datetime
+import subprocess
 
 config.log("=== AGENT: Scheduler ===")
 
@@ -30,14 +33,11 @@ if queue_count < MIN_QUEUE:
     )
     notify_discord(message)
 
-    # Dispara o Content Writer via subprocess
-    import subprocess
     for i in range(needed):
         config.log(f"Gerando post extra #{i+1} de {needed}...")
         result = subprocess.run(
-            ["python", "scripts/agent_writer.py"],
+            [sys.executable, f"{SCRIPT_DIR}/agent_writer.py"],
             capture_output=True, text=True, encoding="utf-8",
-            cwd=str(config.ROOT),
         )
         if result.returncode == 0:
             config.log(f"Post extra gerado com sucesso #{i+1}")
