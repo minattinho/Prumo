@@ -3,6 +3,7 @@ Wrapper para chamadas LLM (Groq grátis ou Ollama local).
 """
 import os
 import json
+import urllib.request
 import config
 
 
