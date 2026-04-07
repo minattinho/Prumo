@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ChevronRight, ChevronLeft } from "lucide-react";
+import { CityInput } from "@/components/city-input";
 
 const CATEGORIES = [
   "Construção",
@@ -28,11 +29,6 @@ const CATEGORIES = [
   "Demolição",
 ];
 
-const ESTADOS = [
-  "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA",
-  "MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN",
-  "RS","RO","RR","SC","SP","SE","TO",
-];
 
 function formatPhone(value: string) {
   const d = value.replace(/\D/g, "").slice(0, 11);
@@ -184,7 +180,7 @@ function ProfessionalRegisterFormInner() {
 
   function validateStep2(): string | null {
     if (!form.city.trim()) return "Informe sua cidade.";
-    if (!form.state) return "Selecione seu estado.";
+    if (!form.state) return "Selecione uma cidade da lista sugerida.";
     if (!form.whatsapp.trim()) return "Informe seu WhatsApp.";
     if (!form.specialty) return "Selecione sua especialidade principal.";
     return null;
@@ -261,8 +257,8 @@ function ProfessionalRegisterFormInner() {
   if (success) {
     return (
       <div className="text-center py-4">
-        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="w-12 h-12 bg-azul-claro rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-6 h-6 text-azul-principal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -387,36 +383,23 @@ function ProfessionalRegisterFormInner() {
       {/* Etapa 2 */}
       {step === 2 && (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="city" className="block text-sm font-medium text-azul-noite mb-1">
-                Cidade
-              </label>
-              <input
-                id="city"
-                type="text"
-                value={form.city}
-                onChange={(e) => set("city", e.target.value)}
-                className={inputClass}
-                placeholder="São Paulo"
-              />
-            </div>
-            <div>
-              <label htmlFor="state" className="block text-sm font-medium text-azul-noite mb-1">
-                Estado
-              </label>
-              <select
-                id="state"
-                value={form.state}
-                onChange={(e) => set("state", e.target.value)}
-                className={inputClass}
-              >
-                <option value="">UF</option>
-                {ESTADOS.map((uf) => (
-                  <option key={uf} value={uf}>{uf}</option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label htmlFor="city" className="block text-sm font-medium text-azul-noite mb-1">
+              Cidade e estado
+            </label>
+            <CityInput
+              value={form.city}
+              onChange={(city) => set("city", city)}
+              onCityStateChange={({ city, state }) => {
+                set("city", city);
+                set("state", state);
+              }}
+              inputClassName={inputClass}
+              placeholder="Ex: São Paulo"
+            />
+            {form.state && (
+              <p className="text-xs text-cinza-texto mt-1">Estado: {form.state}</p>
+            )}
           </div>
 
           <div>

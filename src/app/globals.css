@@ -40,8 +40,50 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Evita cursor de texto e seleção em elementos não-editáveis */
+*:not(input):not(textarea):not([contenteditable]):not([contenteditable="true"]) {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+/* Restaura cursor pointer em elementos interativos */
+a,
+button,
+label,
+select,
+[role="button"],
+[role="link"],
+[role="tab"],
+[role="menuitem"],
+[role="checkbox"],
+[role="radio"] {
+  cursor: pointer;
+}
+
+/* Restaura seleção de texto onde faz sentido */
+input,
+textarea,
+[contenteditable],
+[contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
 /* Focus ring padrão acessível */
 *:focus-visible {
   outline: 2px solid #1A5DB8;
   outline-offset: 2px;
+}
+
+/* Select — design system Prumo */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555555' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+  cursor: pointer;
 }

@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
+import { CityInput } from "@/components/city-input";
 import {
   Camera,
   Plus,
@@ -245,28 +246,22 @@ function IdentidadeTab({ profile, fullName }: { profile: ProfileData; fullName: 
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-azul-noite mb-1.5">Cidade</label>
-            <input
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="São Paulo"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-azul-noite placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-principal/20 focus:border-azul-principal"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-azul-noite mb-1.5">Estado</label>
-            <input
-              type="text"
-              value={state}
-              onChange={(e) => setState(e.target.value)}
-              placeholder="SP"
-              maxLength={2}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-azul-noite placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-principal/20 focus:border-azul-principal uppercase"
-            />
-          </div>
+        <div>
+          <label className="block text-xs font-medium text-azul-noite mb-1.5">Cidade</label>
+          <CityInput
+            value={city}
+            onChange={setCity}
+            onCityStateChange={({ city: c, state: s }) => {
+              setCity(c);
+              setState(s);
+            }}
+            className="border border-gray-200 rounded-lg px-3 py-2.5 focus-within:ring-2 focus-within:ring-azul-principal/20 focus-within:border-azul-principal"
+            inputClassName="flex-1 min-w-0 text-sm text-azul-noite placeholder-gray-400 outline-none bg-transparent"
+            placeholder="Ex: São Paulo"
+          />
+          {state && (
+            <p className="text-xs text-cinza-texto mt-1">Estado: {state}</p>
+          )}
         </div>
 
         <div>
@@ -276,7 +271,7 @@ function IdentidadeTab({ profile, fullName }: { profile: ProfileData; fullName: 
           <select
             value={radius}
             onChange={(e) => setRadius(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-azul-noite bg-white focus:outline-none focus:ring-2 focus:ring-azul-principal/20 focus:border-azul-principal"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-azul-noite bg-white focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent"
           >
             {RADIUS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -610,7 +605,7 @@ function ContatosTab({ initialChannels }: { initialChannels: Channel[] }) {
               <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-azul-principal"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-azul-noite bg-white focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent"
               >
                 {CHANNEL_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>

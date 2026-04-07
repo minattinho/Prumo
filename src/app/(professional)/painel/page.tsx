@@ -137,24 +137,26 @@ export default async function PainelPage() {
       {/* Cards: completude + assinatura */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Completude */}
-        <div className="bg-white rounded-card shadow-card p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-azul-noite">Completude do perfil</h2>
-            <span className="text-sm font-bold text-azul-principal">{completionScore}%</span>
+        {completionScore < 100 && (
+          <div className="bg-white rounded-card shadow-card p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-azul-noite">Completude do perfil</h2>
+              <span className="text-sm font-bold text-azul-principal">{completionScore}%</span>
+            </div>
+            {/* Barra de progresso simples */}
+            <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
+              <div
+                className="bg-azul-principal h-2 rounded-full transition-all"
+                style={{ width: `${completionScore}%` }}
+              />
+            </div>
+            <div className="divide-y divide-gray-50">
+              {checks.map((c) => (
+                <ChecklistItem key={c.label} done={c.done} label={c.label} href={c.href} />
+              ))}
+            </div>
           </div>
-          {/* Barra de progresso simples */}
-          <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
-            <div
-              className="bg-azul-principal h-2 rounded-full transition-all"
-              style={{ width: `${completionScore}%` }}
-            />
-          </div>
-          <div className="divide-y divide-gray-50">
-            {checks.map((c) => (
-              <ChecklistItem key={c.label} done={c.done} label={c.label} href={c.href} />
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* Assinatura */}
         <div className="bg-white rounded-card shadow-card p-5 flex flex-col">
