@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { CityInput } from "@/components/city-input";
+import { isValidCpf, isValidCnpj } from "@/lib/serpro/validators";
 
 const CATEGORIES = [
   "Construção",
@@ -137,6 +138,10 @@ function ProfessionalRegisterFormInner() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [docValidation, setDocValidation] = useState<
+    "idle" | "checking" | "valid" | "invalid" | "unavailable"
+  >("idle");
+  const [docValidationMessage, setDocValidationMessage] = useState<string>("");
 
   const [form, setForm] = useState<FormData>({
     name: "",
@@ -189,13 +194,51 @@ function ProfessionalRegisterFormInner() {
   function validateStep3(): string | null {
     if (form.personType === "PF") {
       const cpfDigits = form.cpf.replace(/\D/g, "");
-      if (cpfDigits.length !== 11) return "Informe um CPF válido (11 dígitos).";
+      if (!isValidCpf(cpfDigits)) return "Informe um CPF válido.";
       if (!form.birthDate) return "Informe sua data de nascimento.";
     } else {
       const cnpjDigits = form.cnpj.replace(/\D/g, "");
-      if (cnpjDigits.length !== 14) return "Informe um CNPJ válido (14 dígitos).";
+      if (!isValidCnpj(cnpjDigits)) return "Informe um CNPJ válido.";
     }
     return null;
+  }
+
+  async function verifyDocument(document: string, type: "cpf" | "cnpj") {
+    const digits = document.replace(/\D/g, "");
+    const expectedLen = type === "cpf" ? 11 : 14;
+    if (digits.length !== expectedLen) return;
+
+    const checksumValid = type === "cpf" ? isValidCpf(digits) : isValidCnpj(digits);
+    if (!checksumValid) {
+      setDocValidation("invalid");
+      setDocValidationMessage(`${type.toUpperCase()} inválido.`);
+      return;
+    }
+
+    setDocValidation("checking");
+    try {
+      const res = await fetch("/api/serpro/precheck", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ document: digits, type }),
+      });
+      const data = await res.json();
+      if (data.status === "UNAVAILABLE") {
+        setDocValidation("unavailable");
+        setDocValidationMessage("Verificação indisponível. Seu cadastro será analisado manualmente.");
+      } else if (data.valid) {
+        setDocValidation("valid");
+        setDocValidationMessage(
+          type === "cpf" ? "CPF regular na Receita Federal." : "CNPJ ativo na Receita Federal."
+        );
+      } else {
+        setDocValidation("invalid");
+        setDocValidationMessage(data.message || `${type.toUpperCase()} com situação irregular.`);
+      }
+    } catch {
+      setDocValidation("unavailable");
+      setDocValidationMessage("Verificação indisponível. Seu cadastro será analisado manualmente.");
+    }
   }
 
   function handleNextStep() {
@@ -213,6 +256,10 @@ function ProfessionalRegisterFormInner() {
     const err = validateStep3();
     if (err) {
       setError(err);
+      return;
+    }
+    if (docValidation === "invalid") {
+      setError(docValidationMessage || "Documento inválido. Verifique o CPF/CNPJ informado.");
       return;
     }
     setError(null);
@@ -472,7 +519,7 @@ function ProfessionalRegisterFormInner() {
                 <button
                   key={type}
                   type="button"
-                  onClick={() => { set("personType", type); setError(null); }}
+                  onClick={() => { set("personType", type); setError(null); setDocValidation("idle"); }}
                   className={`flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
                     form.personType === type
                       ? "border-azul-principal bg-azul-claro text-azul-principal"
@@ -497,10 +544,12 @@ function ProfessionalRegisterFormInner() {
                   type="text"
                   inputMode="numeric"
                   value={form.cpf}
-                  onChange={(e) => set("cpf", formatCPF(e.target.value))}
+                  onChange={(e) => { set("cpf", formatCPF(e.target.value)); setDocValidation("idle"); }}
+                  onBlur={() => verifyDocument(form.cpf, "cpf")}
                   className={inputClass}
                   placeholder="000.000.000-00"
                 />
+                <DocValidationBadge status={docValidation} message={docValidationMessage} />
               </div>
               <div>
                 <label htmlFor="birthDate" className="block text-sm font-medium text-azul-noite mb-1">
@@ -529,10 +578,12 @@ function ProfessionalRegisterFormInner() {
                 type="text"
                 inputMode="numeric"
                 value={form.cnpj}
-                onChange={(e) => set("cnpj", formatCNPJ(e.target.value))}
+                onChange={(e) => { set("cnpj", formatCNPJ(e.target.value)); setDocValidation("idle"); }}
+                onBlur={() => verifyDocument(form.cnpj, "cnpj")}
                 className={inputClass}
                 placeholder="00.000.000/0000-00"
               />
+              <DocValidationBadge status={docValidation} message={docValidationMessage} />
             </div>
           )}
 
@@ -556,10 +607,10 @@ function ProfessionalRegisterFormInner() {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || docValidation === "checking"}
               className="flex-1 bg-laranja-obra hover:opacity-90 text-white font-medium rounded-lg py-2.5 text-sm transition-opacity disabled:opacity-60"
             >
-              {loading ? "Criando conta..." : "Criar conta grátis — 30 dias trial"}
+              {loading ? "Criando conta..." : docValidation === "checking" ? "Verificando..." : "Criar conta grátis — 30 dias trial"}
             </button>
           </div>
 
@@ -572,6 +623,57 @@ function ProfessionalRegisterFormInner() {
         </form>
       )}
     </div>
+  );
+}
+
+function DocValidationBadge({
+  status,
+  message,
+}: {
+  status: "idle" | "checking" | "valid" | "invalid" | "unavailable";
+  message: string;
+}) {
+  if (status === "idle") return null;
+
+  if (status === "checking") {
+    return (
+      <p className="mt-1.5 text-xs text-cinza-texto flex items-center gap-1.5">
+        <span className="inline-block w-3 h-3 border-2 border-cinza-texto border-t-transparent rounded-full animate-spin" />
+        Verificando...
+      </p>
+    );
+  }
+
+  if (status === "valid") {
+    return (
+      <p className="mt-1.5 text-xs text-green-700 flex items-center gap-1.5">
+        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+        </svg>
+        {message}
+      </p>
+    );
+  }
+
+  if (status === "invalid") {
+    return (
+      <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1.5">
+        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        {message}
+      </p>
+    );
+  }
+
+  // unavailable
+  return (
+    <p className="mt-1.5 text-xs text-amber-700 flex items-center gap-1.5">
+      <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+      </svg>
+      {message}
+    </p>
   );
 }
 

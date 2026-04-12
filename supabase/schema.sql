@@ -695,6 +695,25 @@ CREATE POLICY "activity_logs_professional_read" ON public.profile_activity_logs
     )
   );
 
+-- cpf_validations: dono insere e lê o próprio
+CREATE POLICY "cpf_validations_owner_insert" ON public.cpf_validations
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.professional_profiles pp
+      WHERE pp.id = cpf_validations.professional_id
+      AND pp.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "cpf_validations_owner_read" ON public.cpf_validations
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.professional_profiles pp
+      WHERE pp.id = cpf_validations.professional_id
+      AND pp.user_id = auth.uid()
+    )
+  );
+
 -- Contratante insere apenas com seu próprio contractor_id
 CREATE POLICY "activity_logs_contractor_insert" ON public.profile_activity_logs
   FOR INSERT WITH CHECK (contractor_id = auth.uid());

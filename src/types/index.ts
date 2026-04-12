@@ -51,6 +51,33 @@ export type ContactLogType =
 
 export type VerificationStatus = "APPROVED" | "REJECTED";
 
+export type SerproCpfResponse = {
+  ni: string;
+  nome: string;
+  situacao: { codigo: string; descricao: string };
+  nascimento: string;
+  ano_obito?: string;
+};
+
+export type SerproCnpjResponse = {
+  ni: string;
+  nome: string;
+  situacaoCadastral: { codigo: string; descricao: string };
+  dataAbertura: string;
+};
+
+export type DocumentValidationRequest = {
+  document: string;
+  type: "cpf" | "cnpj";
+};
+
+export type DocumentValidationResponse = {
+  valid: boolean;
+  status: "APPROVED" | "REJECTED" | "ERROR" | "UNAVAILABLE";
+  message: string;
+  name?: string;
+};
+
 // Categorias de serviço
 export const SERVICE_CATEGORIES = [
   { value: "construcao", label: "Construção" },

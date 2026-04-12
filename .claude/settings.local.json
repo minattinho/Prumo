@@ -3,7 +3,8 @@
     "allow": [
       "Bash(mv instagram/ ai/)",
       "Bash(mv scripts/ ai/scripts)",
-      "Bash(mv .claude/ ai/claude)"
+      "Bash(mv .claude/ ai/claude)",
+      "Bash(python ai/scripts/agent_scheduler.py)"
     ]
   }
 }
