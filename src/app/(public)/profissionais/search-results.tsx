@@ -62,6 +62,25 @@ export async function SearchResults({
 }: SearchResultsProps) {
   const supabase = await createClient();
 
+  type QueryRow = {
+    id: string;
+    slug: string;
+    city: string | null;
+    state: string | null;
+    photo_url: string | null;
+    created_at: string;
+    cnpj: string | null;
+    profiles: { name: string } | null;
+    professional_specialties: { category: string }[];
+    professional_metrics: {
+      average_rating: number;
+      total_evaluations: number;
+      total_completed_services_via_prumo: number;
+    } | null;
+    verification_badges: { type: string }[];
+    portfolio_projects: { portfolio_images: { cloudinary_url: string; order_in_project: number }[] }[];
+  };
+
   const { data } = await supabase
     .from("professional_profiles")
     .select(`
@@ -76,35 +95,29 @@ export async function SearchResults({
     `)
     .eq("status", "ACTIVE");
 
-  const professionals = (data ?? []).map((p) => {
-    const prof = p.profiles as { name: string } | null;
-    const metrics = p.professional_metrics as {
-      average_rating: number;
-      total_evaluations: number;
-      total_completed_services_via_prumo: number;
-    } | null;
-    const specialties = (p.professional_specialties as { category: string }[]).map(
+  const rows = (data ?? []) as QueryRow[];
+
+  const professionals = rows.map((p) => {
+    const specialties = p.professional_specialties.map(
       (s) => SERVICE_CATEGORIES.find((c) => c.value === s.category)?.label ?? s.category
     );
-    const specialtyValues = (p.professional_specialties as { category: string }[]).map((s) => s.category);
-    const badges = (p.verification_badges as { type: string }[]).map((b) => b.type as BadgeType);
-    const portfolioImages = (
-      p.portfolio_projects as { portfolio_images: { cloudinary_url: string; order_in_project: number }[] }[]
-    )
+    const specialtyValues = p.professional_specialties.map((s) => s.category);
+    const badges = p.verification_badges.map((b) => b.type as BadgeType);
+    const portfolioImages = p.portfolio_projects
       .flatMap((proj) => proj.portfolio_images.map((img) => img.cloudinary_url))
       .slice(0, 3);
 
     return {
       id: p.id,
       slug: p.slug,
-      name: prof?.name ?? "Profissional",
+      name: p.profiles?.name ?? "Profissional",
       city: p.city ?? "",
       state: p.state ?? "",
       specialties,
       specialtyValues,
-      rating: metrics?.average_rating ?? 0,
-      reviewCount: metrics?.total_evaluations ?? 0,
-      completedServices: metrics?.total_completed_services_via_prumo ?? metrics?.total_evaluations ?? 0,
+      rating: p.professional_metrics?.average_rating ?? 0,
+      reviewCount: p.professional_metrics?.total_evaluations ?? 0,
+      completedServices: p.professional_metrics?.total_completed_services_via_prumo ?? p.professional_metrics?.total_evaluations ?? 0,
       photoUrl: p.photo_url ?? null,
       badges,
       portfolioImages,
