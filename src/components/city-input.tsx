@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { MapPin, LocateFixed, Loader2 } from "lucide-react";
 import { getMunicipios, searchMunicipios, type Municipio } from "@/lib/ibge";
 
@@ -19,19 +20,9 @@ async function fetchLocationFromCoords(
   lat: number,
   lon: number
 ): Promise<{ city: string; state: string }> {
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
-    { headers: { "Accept-Language": "pt-BR" } }
-  );
-  const data = await res.json();
-  const city =
-    data.address?.city ??
-    data.address?.town ??
-    data.address?.village ??
-    data.address?.municipality ??
-    "";
-  const state = (data.address?.state_code ?? "").toUpperCase();
-  return { city, state };
+  const res = await fetch(`/api/geocode?lat=${lat}&lon=${lon}`);
+  if (!res.ok) throw new Error("Geocode failed");
+  return res.json();
 }
 
 export function CityInput({
@@ -48,11 +39,17 @@ export function CityInput({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const [mounted, setMounted] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const municipiosRef = useRef<Municipio[] | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     function handleOutsideClick(e: MouseEvent) {
@@ -67,6 +64,31 @@ export function CityInput({
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
+
+  useEffect(() => {
+    function updatePosition() {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setDropdownStyle({
+          position: "fixed",
+          top: rect.bottom + 4,
+          left: rect.left,
+          width: rect.width,
+          zIndex: 9999,
+        });
+      }
+    }
+
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
+      return () => {
+        window.removeEventListener("scroll", updatePosition, true);
+        window.removeEventListener("resize", updatePosition);
+      };
+    }
+  }, [isOpen]);
 
   const selectSuggestion = useCallback(
     (m: Municipio) => {
@@ -148,7 +170,43 @@ export function CityInput({
             pos.coords.latitude,
             pos.coords.longitude
           );
-          if (city) {
+          if (!city) {
+            setGeoState("error");
+            setErrorMsg("Não foi possível identificar a cidade.");
+            return;
+          }
+
+          const normalize = (s: string) =>
+            s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+          const cityNorm = normalize(city);
+          const stateNorm = state.toUpperCase();
+
+          // Tenta encontrar na lista do IBGE para normalizar o nome oficial
+          let municipios: Awaited<ReturnType<typeof getMunicipios>> = [];
+          try {
+            municipios = await getMunicipios();
+          } catch {
+            // Se o IBGE falhar, usa o dado direto da geocode API
+          }
+
+          let match = municipios.find(
+            (m) => normalize(m.nome) === cityNorm && m.uf === stateNorm
+          );
+          if (!match && stateNorm) {
+            match = municipios.find(
+              (m) => normalize(m.nome).startsWith(cityNorm) && m.uf === stateNorm
+            );
+          }
+          if (!match) {
+            match = municipios.find((m) => normalize(m.nome) === cityNorm);
+          }
+
+          if (match) {
+            selectSuggestion(match);
+            setGeoState("idle");
+          } else if (stateNorm) {
+            // A API retornou city+state válidos — usa diretamente mesmo sem match no IBGE
             onChange(city);
             onCityStateChange?.({ city, state });
             setGeoState("idle");
@@ -223,10 +281,11 @@ export function CityInput({
         </span>
       )}
 
-      {isOpen && (
+      {mounted && isOpen && createPortal(
         <ul
           role="listbox"
-          className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden"
+          style={dropdownStyle}
+          className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
         >
           {isLoadingSuggestions && (
             <li className="px-4 py-3 text-sm text-cinza-texto flex items-center gap-2">
@@ -263,7 +322,8 @@ export function CityInput({
               Nenhuma cidade encontrada.
             </li>
           )}
-        </ul>
+        </ul>,
+        document.body
       )}
     </div>
   );

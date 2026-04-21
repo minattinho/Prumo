@@ -42,11 +42,15 @@ CREATE TABLE public.profiles (
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, name)
+  INSERT INTO public.profiles (id, email, name, role)
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email)
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
+    CASE
+      WHEN NEW.raw_user_meta_data->>'role' = 'professional' THEN 'professional'
+      ELSE 'contractor'
+    END
   );
   RETURN NEW;
 END;

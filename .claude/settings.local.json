@@ -4,7 +4,8 @@
       "Bash(mv instagram/ ai/)",
       "Bash(mv scripts/ ai/scripts)",
       "Bash(mv .claude/ ai/claude)",
-      "Bash(python ai/scripts/agent_scheduler.py)"
+      "Bash(python ai/scripts/agent_scheduler.py)",
+      "Bash(curl -v \"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=-28.675&longitude=-49.369&localityLanguage=pt\")"
     ]
   }
 }

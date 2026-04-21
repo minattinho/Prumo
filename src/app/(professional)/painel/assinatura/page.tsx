@@ -66,7 +66,7 @@ export default async function AssinaturaPage() {
   const effectivePeriodEnd = sub?.current_period_end ?? pro?.subscription_paid_until ?? null;
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-azul-noite">Assinatura</h1>
         <p className="text-sm text-cinza-texto mt-0.5">Gerencie seu plano e histórico de pagamentos.</p>

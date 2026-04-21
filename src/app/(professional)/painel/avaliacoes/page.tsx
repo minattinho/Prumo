@@ -82,7 +82,7 @@ export default async function AvaliacoesPage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-azul-noite">Avaliações recebidas</h1>
         <p className="text-sm text-cinza-texto mt-0.5">

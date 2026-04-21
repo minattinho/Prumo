@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import * as Tabs from "@radix-ui/react-tabs";
 import {
   Plus,
   Pencil,
@@ -47,14 +46,14 @@ const EMPTY_FORM: FormData = {
 };
 
 const STATUS_CONFIG = {
-  COMPLETED: { label: "Concluído", className: "bg-green-100 text-green-700" },
-  IN_PROGRESS: { label: "Em andamento", className: "bg-amber-100 text-amber-700" },
+  COMPLETED:   { label: "Concluído",    className: "bg-green-100 text-green-700 border border-green-200" },
+  IN_PROGRESS: { label: "Em andamento", className: "bg-amber-100 text-amber-700 border border-amber-200" },
 };
 
 const ORIGIN_CONFIG = {
-  PRUMO: { label: "Prumo", className: "bg-azul-claro text-azul-principal" },
-  REFERRAL: { label: "Indicação", className: "bg-purple-50 text-purple-600" },
-  OTHER: { label: "Outro", className: "bg-gray-100 text-cinza-texto" },
+  PRUMO:    { label: "Prumo",     className: "bg-azul-claro text-azul-principal border border-azul-principal/20" },
+  REFERRAL: { label: "Indicação", className: "bg-purple-50 text-purple-600 border border-purple-200" },
+  OTHER:    { label: "Outro",     className: "bg-gray-100 text-cinza-texto border border-gray-200" },
 };
 
 type Props = {
@@ -125,13 +124,18 @@ function ServiceModal({
   return (
     <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
+        <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" />
         <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-card shadow-2xl p-6">
           <div className="flex items-center justify-between mb-5">
-            <Dialog.Title className="text-base font-semibold text-azul-noite">
-              {editService ? "Editar serviço" : "Registrar serviço"}
-            </Dialog.Title>
-            <Dialog.Close className="text-cinza-texto hover:text-azul-noite">
+            <div>
+              <Dialog.Title className="text-base font-bold text-azul-noite">
+                {editService ? "Editar serviço" : "Registrar serviço"}
+              </Dialog.Title>
+              <p className="text-xs text-cinza-texto mt-0.5">
+                {editService ? "Atualize as informações do serviço" : "Adicione um novo serviço ao seu histórico"}
+              </p>
+            </div>
+            <Dialog.Close className="p-1.5 text-cinza-texto hover:text-azul-noite hover:bg-gray-100 rounded-lg transition-colors">
               <X className="w-5 h-5" />
             </Dialog.Close>
           </div>
@@ -139,7 +143,7 @@ function ServiceModal({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-azul-noite mb-1.5">
+                <label className="block text-xs font-semibold text-azul-noite mb-1.5">
                   Cliente <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -151,7 +155,7 @@ function ServiceModal({
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-azul-noite mb-1.5">
+                <label className="block text-xs font-semibold text-azul-noite mb-1.5">
                   Tipo de serviço <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -166,9 +170,7 @@ function ServiceModal({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-azul-noite mb-1.5">
-                  Valor (R$)
-                </label>
+                <label className="block text-xs font-semibold text-azul-noite mb-1.5">Valor (R$)</label>
                 <input
                   type="text"
                   value={form.value}
@@ -178,9 +180,7 @@ function ServiceModal({
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-azul-noite mb-1.5">
-                  Data
-                </label>
+                <label className="block text-xs font-semibold text-azul-noite mb-1.5">Data</label>
                 <input
                   type="date"
                   value={form.execution_date}
@@ -191,14 +191,14 @@ function ServiceModal({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-azul-noite mb-2">Status</label>
+              <label className="block text-xs font-semibold text-azul-noite mb-2">Status</label>
               <div className="flex gap-2">
                 {(["COMPLETED", "IN_PROGRESS"] as const).map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, status: s }))}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
                       form.status === s
                         ? "border-azul-principal bg-azul-claro text-azul-principal"
                         : "border-gray-200 text-cinza-texto hover:border-azul-principal/40"
@@ -211,14 +211,14 @@ function ServiceModal({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-azul-noite mb-2">Origem</label>
+              <label className="block text-xs font-semibold text-azul-noite mb-2">Origem</label>
               <div className="flex gap-2">
                 {(["PRUMO", "REFERRAL", "OTHER"] as const).map((o) => (
                   <button
                     key={o}
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, origin: o }))}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
                       form.origin === o
                         ? "border-azul-principal bg-azul-claro text-azul-principal"
                         : "border-gray-200 text-cinza-texto hover:border-azul-principal/40"
@@ -232,7 +232,7 @@ function ServiceModal({
           </div>
 
           {error && (
-            <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+            <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2.5">
               {error}
             </p>
           )}
@@ -250,7 +250,7 @@ function ServiceModal({
               type="button"
               onClick={handleSubmit}
               disabled={isPending}
-              className="flex-1 bg-azul-principal hover:bg-azul-noite text-white rounded-lg py-2.5 text-sm font-medium transition-colors disabled:opacity-60"
+              className="flex-1 bg-azul-principal hover:bg-azul-noite text-white rounded-lg py-2.5 text-sm font-semibold transition-colors disabled:opacity-60"
             >
               {isPending ? (
                 <span className="flex items-center justify-center gap-2">
@@ -258,9 +258,9 @@ function ServiceModal({
                   Salvando...
                 </span>
               ) : editService ? (
-                "Salvar"
+                "Salvar alterações"
               ) : (
-                "Registrar"
+                "Registrar serviço"
               )}
             </button>
           </div>
@@ -321,31 +321,29 @@ export function ServicesClient({ initialServices }: Props) {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { icon: Briefcase, value: services.length, label: "Total", color: "text-azul-principal bg-azul-claro" },
-          { icon: CheckCircle2, value: completedCount, label: "Concluídos", color: "text-green-600 bg-green-50" },
-          { icon: Clock, value: inProgressCount, label: "Em andamento", color: "text-amber-600 bg-amber-50" },
-          { icon: DollarSign, value: formatCurrency(totalRevenue), label: "Receita total", color: "text-laranja-obra bg-orange-50" },
-        ].map(({ icon: Icon, value, label, color }) => (
-          <div key={label} className="bg-white rounded-card shadow-card p-4 flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
-              <Icon className="w-5 h-5" />
+          { icon: Briefcase,   value: services.length,          label: "Total",        iconColor: "text-azul-principal", bg: "bg-azul-claro"  },
+          { icon: CheckCircle2,value: completedCount,           label: "Concluídos",   iconColor: "text-green-600",      bg: "bg-green-50"    },
+          { icon: Clock,       value: inProgressCount,          label: "Em andamento", iconColor: "text-amber-600",      bg: "bg-amber-50"    },
+          { icon: DollarSign,  value: formatCurrency(totalRevenue), label: "Receita total", iconColor: "text-laranja-obra", bg: "bg-orange-50" },
+        ].map(({ icon: Icon, value, label, iconColor, bg }) => (
+          <div key={label} className="bg-white rounded-card shadow-card p-4 flex flex-col gap-2">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${bg}`}>
+              <Icon className={`w-4 h-4 ${iconColor}`} />
             </div>
-            <div className="min-w-0">
-              <p className="text-lg font-bold text-azul-noite truncate">{value}</p>
-              <p className="text-xs text-cinza-texto">{label}</p>
-            </div>
+            <p className={`text-xl font-bold text-azul-noite leading-none truncate`}>{value}</p>
+            <p className="text-xs text-cinza-texto">{label}</p>
           </div>
         ))}
       </div>
 
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
           {(["ALL", "COMPLETED", "IN_PROGRESS"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 ${
                 filter === tab
                   ? "bg-white text-azul-principal shadow-sm"
                   : "text-cinza-texto hover:text-azul-noite"
@@ -358,7 +356,7 @@ export function ServicesClient({ initialServices }: Props) {
         <button
           type="button"
           onClick={openCreate}
-          className="flex items-center gap-2 bg-azul-principal hover:bg-azul-noite text-white rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-azul-principal hover:bg-azul-noite text-white rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
         >
           <Plus className="w-4 h-4" />
           Registrar serviço
@@ -367,19 +365,21 @@ export function ServicesClient({ initialServices }: Props) {
 
       {/* Empty state */}
       {filtered.length === 0 && (
-        <div className="bg-white rounded-card shadow-card text-center py-16">
-          <TrendingUp className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+        <div className="bg-white rounded-card shadow-card text-center py-16 px-6">
+          <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+            <TrendingUp className="w-7 h-7 text-gray-300" />
+          </div>
           <h3 className="text-base font-semibold text-azul-noite mb-1">
             {filter === "ALL" ? "Nenhum serviço registrado" : `Nenhum serviço ${STATUS_CONFIG[filter as keyof typeof STATUS_CONFIG]?.label.toLowerCase()}`}
           </h3>
-          <p className="text-sm text-cinza-texto mb-5">
-            Registre seus serviços para acompanhar seus resultados.
+          <p className="text-sm text-cinza-texto mb-5 max-w-xs mx-auto">
+            Registre seus serviços para acompanhar sua receita e histórico de trabalhos.
           </p>
           {filter === "ALL" && (
             <button
               type="button"
               onClick={openCreate}
-              className="inline-flex items-center gap-2 bg-azul-principal hover:bg-azul-noite text-white rounded-lg px-5 py-2.5 text-sm font-medium transition-colors"
+              className="inline-flex items-center gap-2 bg-azul-principal hover:bg-azul-noite text-white rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors"
             >
               <Plus className="w-4 h-4" />
               Registrar primeiro serviço
@@ -390,56 +390,66 @@ export function ServicesClient({ initialServices }: Props) {
 
       {/* List */}
       {filtered.length > 0 && (
-        <div className="bg-white rounded-card shadow-card divide-y divide-gray-50">
-          {filtered.map((service) => {
-            const statusCfg = STATUS_CONFIG[service.status];
-            const originCfg = ORIGIN_CONFIG[service.origin];
-            return (
-              <div key={service.id} className="flex items-center gap-3 px-5 py-4">
-                <div className="w-10 h-10 rounded-lg bg-azul-claro flex items-center justify-center shrink-0">
-                  <Briefcase className="w-5 h-5 text-azul-principal" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium text-azul-noite">{service.client_name}</p>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusCfg.className}`}>
-                      {statusCfg.label}
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${originCfg.className}`}>
-                      {originCfg.label}
-                    </span>
+        <div className="bg-white rounded-card shadow-card overflow-hidden">
+          {/* Table header */}
+          <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-cinza-texto uppercase tracking-wide">
+            <span>Cliente / Serviço</span>
+            <span className="hidden md:block">Data</span>
+            <span className="hidden sm:block text-right">Valor</span>
+            <span />
+          </div>
+          <div className="divide-y divide-gray-50">
+            {filtered.map((service) => {
+              const statusCfg = STATUS_CONFIG[service.status];
+              const originCfg = ORIGIN_CONFIG[service.origin];
+              return (
+                <div key={service.id} className="flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition-colors group">
+                  <div className="w-9 h-9 rounded-xl bg-azul-claro flex items-center justify-center shrink-0">
+                    <Briefcase className="w-4.5 h-4.5 text-azul-principal" />
                   </div>
-                  <div className="flex items-center gap-3 mt-0.5 text-xs text-cinza-texto flex-wrap">
-                    <span>{service.service_type}</span>
-                    <span>·</span>
-                    <span>{formatDate(service.execution_date)}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <p className="text-sm font-semibold text-azul-noite truncate">{service.client_name}</p>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusCfg.className}`}>
+                        {statusCfg.label}
+                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${originCfg.className}`}>
+                        {originCfg.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-cinza-texto flex-wrap">
+                      <span>{service.service_type}</span>
+                      <span className="hidden md:inline">·  {formatDate(service.execution_date)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <p className="text-sm font-bold text-azul-noite hidden sm:block whitespace-nowrap">
+                      {formatCurrency(service.value)}
+                    </p>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(service)}
+                        className="p-1.5 text-cinza-texto hover:text-azul-principal hover:bg-azul-claro rounded-lg transition-colors"
+                        title="Editar"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(service.id)}
+                        disabled={isPending}
+                        className="p-1.5 text-cinza-texto hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Excluir"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 shrink-0">
-                  <p className="text-sm font-semibold text-azul-noite hidden sm:block">
-                    {formatCurrency(service.value)}
-                  </p>
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() => openEdit(service)}
-                      className="p-2 text-cinza-texto hover:text-azul-principal hover:bg-azul-claro rounded-lg transition-colors"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(service.id)}
-                      disabled={isPending}
-                      className="p-2 text-cinza-texto hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 

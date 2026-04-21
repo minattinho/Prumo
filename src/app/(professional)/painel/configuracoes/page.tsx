@@ -18,7 +18,7 @@ export default async function ConfiguracoesPage() {
     };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-azul-noite">Configurações</h1>
         <p className="text-sm text-cinza-texto mt-0.5">Gerencie sua conta e segurança.</p>

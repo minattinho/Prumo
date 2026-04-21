@@ -12,12 +12,18 @@ export async function getMunicipios(): Promise<Municipio[]> {
       .then((r) => r.json())
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((data: any[]) => {
-        cache = data.map((m) => ({
-          nome: m.nome as string,
-          uf: m.microrregiao.mesorregiao.UF.sigla as string,
-        }));
+        cache = data
+          .filter((m) => m?.microrregiao?.mesorregiao?.UF?.sigla)
+          .map((m) => ({
+            nome: m.nome as string,
+            uf: m.microrregiao.mesorregiao.UF.sigla as string,
+          }));
         fetchPromise = null;
         return cache!;
+      })
+      .catch((err) => {
+        fetchPromise = null;
+        throw err;
       });
   }
   return fetchPromise;

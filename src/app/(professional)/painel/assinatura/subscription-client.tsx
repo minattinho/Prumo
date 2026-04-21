@@ -1,7 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { CreditCard, CheckCircle2, XCircle, Clock, AlertTriangle } from "lucide-react";
+import {
+  CreditCard,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  Zap,
+  Shield,
+  TrendingUp,
+  ArrowRight,
+} from "lucide-react";
 import type { Transaction } from "./page";
 
 type Props = {
@@ -11,26 +21,33 @@ type Props = {
   transactions: Transaction[];
 };
 
-const STATUS_CONFIG: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; badgeClass: string; icon: React.ReactNode; heroClass: string }
+> = {
   TRIAL: {
     label: "Trial gratuito",
-    className: "bg-amber-100 text-amber-700",
-    icon: <Clock className="w-4 h-4 text-amber-500" />,
+    badgeClass: "bg-amber-100 text-amber-700 border border-amber-200",
+    icon: <Clock className="w-4 h-4" />,
+    heroClass: "bg-amber-50 border-amber-200",
   },
   ACTIVE: {
     label: "Ativo",
-    className: "bg-green-100 text-green-700",
-    icon: <CheckCircle2 className="w-4 h-4 text-green-500" />,
+    badgeClass: "bg-green-100 text-green-700 border border-green-200",
+    icon: <CheckCircle2 className="w-4 h-4" />,
+    heroClass: "bg-green-50 border-green-200",
   },
   CANCELLED: {
     label: "Cancelado",
-    className: "bg-red-100 text-red-700",
-    icon: <XCircle className="w-4 h-4 text-red-500" />,
+    badgeClass: "bg-red-100 text-red-700 border border-red-200",
+    icon: <XCircle className="w-4 h-4" />,
+    heroClass: "bg-red-50 border-red-200",
   },
   SUSPENDED: {
     label: "Suspenso",
-    className: "bg-gray-100 text-gray-600",
-    icon: <AlertTriangle className="w-4 h-4 text-gray-500" />,
+    badgeClass: "bg-gray-100 text-gray-600 border border-gray-200",
+    icon: <AlertTriangle className="w-4 h-4" />,
+    heroClass: "bg-gray-50 border-gray-200",
   },
 };
 
@@ -41,8 +58,14 @@ const TX_STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   REFUNDED:  { label: "Reembolsado", className: "bg-gray-100 text-gray-600"   },
 };
 
+const PLAN_FEATURES = [
+  { icon: Zap,        label: "Perfil destacado nas buscas" },
+  { icon: Shield,     label: "Selo de profissional verificado" },
+  { icon: TrendingUp, label: "Relatórios de acessos e métricas" },
+  { icon: CreditCard, label: "Cancele quando quiser" },
+];
+
 function formatCurrency(amount: number, currency: string): string {
-  // amount stored as decimal (ex: 79.00), not in cents
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: currency.toUpperCase(),
@@ -58,69 +81,117 @@ export function SubscriptionClient({ status, trialEndsAt, periodEnd, transaction
     trialDaysLeft = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   }
 
+  const isUrgent = status === "TRIAL" && trialDaysLeft !== null && trialDaysLeft <= 7;
+
   return (
-    <div className="space-y-6">
-      {/* Card do plano */}
-      <div className="bg-white rounded-card shadow-card p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-azul-claro flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-azul-principal" />
+    <div className="space-y-5">
+
+      {/* Plan hero card */}
+      <div className="bg-white rounded-card shadow-card overflow-hidden">
+        {/* Top accent */}
+        <div className="h-1 bg-linear-to-r from-azul-principal to-azul-medio" />
+
+        <div className="p-6">
+          {/* Plan header */}
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-azul-claro flex items-center justify-center">
+                <CreditCard className="w-6 h-6 text-azul-principal" />
+              </div>
+              <div>
+                <p className="text-base font-bold text-azul-noite">Plano Prumo Pro</p>
+                <p className="text-sm text-cinza-texto">
+                  <span className="font-bold text-azul-noite text-lg">R$79</span>
+                  <span className="text-xs ml-0.5">/mês</span>
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-azul-noite">Plano Prumo Pro</p>
-              <p className="text-xs text-cinza-texto">R$79/mês</p>
-            </div>
+            <span className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${cfg.badgeClass}`}>
+              {cfg.icon}
+              {cfg.label}
+            </span>
           </div>
-          <span className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${cfg.className}`}>
-            {cfg.icon}
-            {cfg.label}
-          </span>
-        </div>
 
-        {/* Linha informativa contextual */}
-        <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-cinza-texto">
-          {status === "TRIAL" && trialDaysLeft !== null && (
-            <p>
-              <span className="font-semibold text-azul-noite">{trialDaysLeft}</span>{" "}
-              {trialDaysLeft === 1 ? "dia restante" : "dias restantes"} no período gratuito.
-            </p>
-          )}
-          {status === "ACTIVE" && periodEnd && (
-            <p>
-              Próxima cobrança em{" "}
-              <span className="font-medium text-azul-noite">
-                {new Date(periodEnd).toLocaleDateString("pt-BR")}
-              </span>
-              .
-            </p>
-          )}
-          {(status === "CANCELLED" || status === "SUSPENDED") && (
-            <p className="text-amber-700">
-              Seu perfil ficará oculto até a reativação da assinatura.
-            </p>
-          )}
-        </div>
+          {/* Status message */}
+          <div className={`rounded-xl border p-4 mb-5 ${cfg.heroClass}`}>
+            {status === "TRIAL" && trialDaysLeft !== null && (
+              <div className="flex items-center gap-3">
+                <div>
+                  <p className={`text-3xl font-bold leading-none ${isUrgent ? "text-orange-600" : "text-azul-noite"}`}>
+                    {trialDaysLeft}
+                    <span className="text-sm font-normal text-cinza-texto ml-1.5">
+                      {trialDaysLeft === 1 ? "dia restante" : "dias restantes"}
+                    </span>
+                  </p>
+                  <p className="text-xs text-cinza-texto mt-1">
+                    {isUrgent
+                      ? "Assine agora para manter seu perfil visível."
+                      : "Seu trial termina em breve. Assine para continuar."}
+                  </p>
+                </div>
+              </div>
+            )}
+            {status === "ACTIVE" && periodEnd && (
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-green-800">Assinatura ativa</p>
+                  <p className="text-xs text-green-700 mt-0.5">
+                    Próxima cobrança:{" "}
+                    <span className="font-bold">
+                      {new Date(periodEnd).toLocaleDateString("pt-BR")}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            )}
+            {(status === "CANCELLED" || status === "SUSPENDED") && (
+              <div className="flex items-center gap-2">
+                {status === "CANCELLED"
+                  ? <XCircle className="w-5 h-5 text-red-500 shrink-0" />
+                  : <AlertTriangle className="w-5 h-5 text-gray-500 shrink-0" />
+                }
+                <div>
+                  <p className="text-sm font-semibold text-red-800">
+                    {status === "CANCELLED" ? "Assinatura cancelada" : "Assinatura suspensa"}
+                  </p>
+                  <p className="text-xs text-red-700 mt-0.5">
+                    Seu perfil está oculto na plataforma até a reativação.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
 
-        {/* CTA contextual */}
-        <div className="mt-4">
+          {/* Features list */}
+          <div className="grid grid-cols-2 gap-2 mb-5">
+            {PLAN_FEATURES.map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-2 text-xs text-cinza-texto">
+                <Icon className="w-3.5 h-3.5 text-azul-principal shrink-0" />
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
           {status === "TRIAL" && (
             <Link
               href="/planos"
-              className="inline-block bg-laranja-obra hover:opacity-90 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-opacity"
+              className="flex items-center justify-center gap-2 w-full bg-laranja-obra hover:opacity-90 text-white font-semibold rounded-xl py-3 text-sm transition-opacity"
             >
               Assinar agora — R$79/mês
+              <ArrowRight className="w-4 h-4" />
             </Link>
           )}
           {status === "ACTIVE" && (
-            <div className="relative inline-block group">
+            <div className="relative group inline-block w-full">
               <button
                 disabled
-                className="border border-gray-200 text-cinza-texto text-sm font-medium px-5 py-2.5 rounded-lg cursor-not-allowed opacity-60"
+                className="w-full flex items-center justify-center gap-2 border border-gray-200 text-cinza-texto font-medium rounded-xl py-3 text-sm cursor-not-allowed opacity-60"
               >
                 Gerenciar assinatura
               </button>
-              <span className="absolute left-0 -top-8 text-xs bg-gray-800 text-white px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <span className="absolute left-1/2 -translate-x-1/2 -top-9 text-xs bg-azul-noite text-white px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 Disponível em breve
               </span>
             </div>
@@ -128,48 +199,60 @@ export function SubscriptionClient({ status, trialEndsAt, periodEnd, transaction
           {(status === "CANCELLED" || status === "SUSPENDED") && (
             <Link
               href="/planos"
-              className="inline-block bg-azul-principal hover:bg-azul-noite text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+              className="flex items-center justify-center gap-2 w-full bg-azul-principal hover:bg-azul-noite text-white font-semibold rounded-xl py-3 text-sm transition-colors"
             >
               Reativar assinatura
+              <ArrowRight className="w-4 h-4" />
             </Link>
           )}
         </div>
       </div>
 
-      {/* Histórico de pagamentos */}
-      <div className="bg-white rounded-card shadow-card p-6">
-        <h2 className="text-sm font-semibold text-azul-noite mb-4">Histórico de pagamentos</h2>
+      {/* Payment history */}
+      <div className="bg-white rounded-card shadow-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-azul-noite">Histórico de pagamentos</h2>
+          {transactions.length > 0 && (
+            <span className="text-xs text-cinza-texto">{transactions.length} transações</span>
+          )}
+        </div>
 
         {transactions.length === 0 ? (
-          <div className="py-8 flex flex-col items-center gap-2 text-center">
-            <CreditCard className="w-8 h-8 text-gray-200" />
+          <div className="py-12 flex flex-col items-center gap-3 text-center px-6">
+            <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center">
+              <CreditCard className="w-6 h-6 text-gray-300" />
+            </div>
             <p className="text-sm text-cinza-texto">Nenhuma transação encontrada.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 text-xs text-cinza-texto">
-                  <th className="text-left pb-2 font-medium">Data</th>
-                  <th className="text-left pb-2 font-medium">Descrição</th>
-                  <th className="text-right pb-2 font-medium">Valor</th>
-                  <th className="text-right pb-2 font-medium">Status</th>
+                <tr className="bg-gray-50 border-b border-gray-100 text-xs text-cinza-texto">
+                  <th className="text-left px-6 py-3 font-semibold">Data</th>
+                  <th className="text-left px-4 py-3 font-semibold">Descrição</th>
+                  <th className="text-right px-4 py-3 font-semibold">Valor</th>
+                  <th className="text-right px-6 py-3 font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {transactions.map((tx) => {
                   const txCfg = TX_STATUS_CONFIG[tx.status] ?? TX_STATUS_CONFIG.PENDING;
                   return (
-                    <tr key={tx.id}>
-                      <td className="py-3 text-cinza-texto">
-                        {new Date(tx.created_at).toLocaleDateString("pt-BR")}
+                    <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="py-3.5 px-6 text-cinza-texto text-xs whitespace-nowrap">
+                        {new Date(tx.created_at).toLocaleDateString("pt-BR", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
                       </td>
-                      <td className="py-3 text-azul-noite">Plano Prumo Pro — mensal</td>
-                      <td className="py-3 text-right font-medium text-azul-noite">
+                      <td className="py-3.5 px-4 text-azul-noite">Prumo Pro — mensal</td>
+                      <td className="py-3.5 px-4 text-right font-semibold text-azul-noite whitespace-nowrap">
                         {formatCurrency(tx.amount, tx.currency)}
                       </td>
-                      <td className="py-3 text-right">
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${txCfg.className}`}>
+                      <td className="py-3.5 px-6 text-right">
+                        <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${txCfg.className}`}>
                           {txCfg.label}
                         </span>
                       </td>
@@ -181,6 +264,7 @@ export function SubscriptionClient({ status, trialEndsAt, periodEnd, transaction
           </div>
         )}
       </div>
+
     </div>
   );
 }

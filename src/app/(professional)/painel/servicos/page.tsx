@@ -30,7 +30,7 @@ export default async function PainelServicosPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-azul-noite">Meus Serviços</h1>
         <p className="text-sm text-cinza-texto mt-0.5">

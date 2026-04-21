@@ -41,7 +41,7 @@ export default async function PainelPortfolioPage() {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-azul-noite">Meu Portfólio</h1>
         <p className="text-sm text-cinza-texto mt-0.5">

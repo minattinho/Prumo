@@ -61,7 +61,7 @@ export function ProposalForm({ request }: Props) {
   const contractorName = request.contractor?.full_name ?? "Contratante";
 
   return (
-    <div className="p-6 max-w-2xl mx-auto space-y-6">
+    <div className="p-6 space-y-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-cinza-texto">
         <a href="/painel/solicitacoes" className="hover:text-azul-principal transition-colors">

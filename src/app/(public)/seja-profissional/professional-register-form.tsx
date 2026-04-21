@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, ChevronDown, Check } from "lucide-react";
 import { CityInput } from "@/components/city-input";
 import { isValidCpf, isValidCnpj } from "@/lib/serpro/validators";
 
@@ -28,6 +28,7 @@ const CATEGORIES = [
   "Reformas Gerais",
   "Instalações de Gás",
   "Demolição",
+  "Outros",
 ];
 
 
@@ -142,6 +143,18 @@ function ProfessionalRegisterFormInner() {
     "idle" | "checking" | "valid" | "invalid" | "unavailable"
   >("idle");
   const [docValidationMessage, setDocValidationMessage] = useState<string>("");
+  const [specDropOpen, setSpecDropOpen] = useState(false);
+  const specDropRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (specDropRef.current && !specDropRef.current.contains(e.target as Node)) {
+        setSpecDropOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const [form, setForm] = useState<FormData>({
     name: "",
@@ -303,20 +316,56 @@ function ProfessionalRegisterFormInner() {
 
   if (success) {
     return (
-      <div className="text-center py-4">
-        <div className="w-12 h-12 bg-azul-claro rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-6 h-6 text-azul-principal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      <div className="text-center py-6 space-y-5">
+        {/* Ícone */}
+        <div className="w-16 h-16 bg-azul-principal rounded-full flex items-center justify-center mx-auto shadow-md">
+          <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-azul-noite mb-2">Pronto! Confirma o e-mail</h2>
-        <p className="text-sm text-cinza-texto">
-          Enviamos um link de confirmação para{" "}
-          <strong className="text-azul-noite">{form.email}</strong>. Abre lá e clica no link para
-          ativar sua conta.
-        </p>
-        <p className="mt-3 text-xs text-cinza-texto">
-          Você será redirecionado ao seu painel após confirmar.
+
+        {/* Título */}
+        <div>
+          <h2 className="text-xl font-bold text-azul-noite">Cadastro realizado!</h2>
+          <p className="text-sm text-cinza-texto mt-1">Só falta confirmar seu e-mail para ativar a conta.</p>
+        </div>
+
+        {/* Card com e-mail */}
+        <div className="bg-azul-claro border border-azul-principal/20 rounded-xl px-4 py-3 flex items-center gap-3 text-left">
+          <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+            <svg className="w-4 h-4 text-azul-principal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-xs text-cinza-texto">E-mail de confirmação enviado para</p>
+            <p className="text-sm font-semibold text-azul-noite">{form.email}</p>
+          </div>
+        </div>
+
+        {/* Próximos passos */}
+        <div className="text-left space-y-2">
+          {[
+            "Abra seu e-mail e clique no link de confirmação",
+            "Você será redirecionado ao seu painel",
+            "Complete seu perfil e comece a receber clientes",
+          ].map((s, i) => (
+            <div key={i} className="flex items-start gap-2.5">
+              <span className="w-5 h-5 rounded-full bg-azul-claro text-azul-principal text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              <p className="text-sm text-cinza-texto">{s}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Rodapé */}
+        <p className="text-xs text-gray-400">
+          Não recebeu? Verifique a pasta de spam ou{" "}
+          <a href="/seja-profissional" className="text-azul-principal hover:underline">
+            tente novamente
+          </a>
+          .
         </p>
       </div>
     );
@@ -468,17 +517,51 @@ function ProfessionalRegisterFormInner() {
             <label htmlFor="specialty" className="block text-sm font-medium text-azul-noite mb-1">
               Especialidade principal
             </label>
-            <select
-              id="specialty"
-              value={form.specialty}
-              onChange={(e) => set("specialty", e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Selecione uma especialidade</option>
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+            <div ref={specDropRef} className="relative">
+              <button
+                type="button"
+                id="specialty"
+                onClick={() => setSpecDropOpen((o) => !o)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg border bg-white transition-colors ${
+                  specDropOpen
+                    ? "border-azul-principal ring-2 ring-azul-principal"
+                    : "border-gray-200"
+                } ${form.specialty ? "text-azul-noite" : "text-gray-400"}`}
+              >
+                <span>{form.specialty || "Selecione uma especialidade"}</span>
+                <ChevronDown
+                  size={15}
+                  className={`text-cinza-texto shrink-0 transition-transform ${specDropOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {specDropOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                  <div className="py-1 max-h-52 overflow-y-auto">
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          set("specialty", cat);
+                          setSpecDropOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-azul-claro ${
+                          form.specialty === cat
+                            ? "text-azul-principal font-medium bg-azul-claro/50"
+                            : "text-azul-noite"
+                        }`}
+                      >
+                        <span>{cat}</span>
+                        {form.specialty === cat && (
+                          <Check size={13} className="text-azul-principal shrink-0 ml-2" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {error && (

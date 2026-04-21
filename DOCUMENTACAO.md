@@ -24,7 +24,7 @@
 
 ### O que é o Prumo
 
-Prumo é um **marketplace de prestadores de serviços** focado em construção e reforma. A plataforma conecta pessoas que precisam de serviços (contratantes) com profissionais qualificados (pedreiros, eletricistas, encanadores, etc.) por meio de **contato direto**, sem intermediação de pagamento.
+Prumo é um **marketplace de prestadores de serviços** focado em serviços gerais. A plataforma conecta pessoas que precisam de serviços (contratantes) com profissionais qualificados (pedreiros, eletricistas, encanadores, etc.) por meio de **contato direto**, sem intermediação de pagamento.
 
 ### Proposta de Valor
 

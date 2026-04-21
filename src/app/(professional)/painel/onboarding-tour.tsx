@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   Sparkles,
@@ -303,6 +304,7 @@ const STEPS = [
 const TOTAL = STEPS.length - 1; // steps 0 = welcome, last = finish
 
 export function OnboardingTour({ open }: { open: boolean }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(open);
   const [step, setStep] = useState(0);
   const [completing, setCompleting] = useState(false);
@@ -311,6 +313,7 @@ export function OnboardingTour({ open }: { open: boolean }) {
     setCompleting(true);
     await completeOnboarding();
     setIsOpen(false);
+    router.push("/painel/perfil");
   }
 
   const current = STEPS[step];
@@ -387,14 +390,14 @@ export function OnboardingTour({ open }: { open: boolean }) {
 
               {/* Próximo / Começar */}
               {isLast ? (
-                <a
-                  href="/painel/perfil"
+                <button
                   onClick={finish}
-                  className="flex items-center gap-1 ml-auto px-5 py-2 rounded-lg bg-[#1A5DB8] text-sm font-medium text-white hover:bg-[#1A2B4A] transition-colors"
+                  disabled={completing}
+                  className="flex items-center gap-1 ml-auto px-5 py-2 rounded-lg bg-[#1A5DB8] text-sm font-medium text-white hover:bg-[#1A2B4A] transition-colors disabled:opacity-60"
                 >
-                  Ir para o Perfil
+                  {completing ? "Salvando..." : "Ir para o Perfil"}
                   <ChevronRight className="w-4 h-4" />
-                </a>
+                </button>
               ) : (
                 <button
                   onClick={() => setStep((s) => s + 1)}
