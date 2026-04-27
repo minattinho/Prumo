@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HeroSearch } from "./hero-search";
+import { HeroMapWrapper } from "./hero-map-wrapper";
 import {
   Search,
   Star,
@@ -117,20 +118,34 @@ export default function HomePage() {
           aria-hidden="true"
         />
 
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight mb-5">
-            Encontre os melhores<br className="hidden sm:block" />
-            <span className="text-laranja-obra"> prestadores de serviços</span>
-            <br />
-            <span className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight mb-5"> na sua região.</span>
-          </h1>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+          <div className="flex flex-col lg:flex-row lg:items-stretch gap-10 lg:gap-16">
 
-          <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Do encanador ao arquiteto — portfólio real, avaliações verificadas e contato direto.<br className="hidden sm:block" />
-            Sem intermediários, sem taxas, sem enrolação.
-          </p>
+            {/* Coluna esquerda: título + busca */}
+            <div className="flex-1 text-center lg:text-left flex flex-col justify-center">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight mb-5">
+                Encontre os melhores<br className="hidden sm:block" />
+                <span className="text-laranja-obra"> prestadores de serviços</span>
+                <br />
+                <span className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight"> na sua região.</span>
+              </h1>
 
-          <HeroSearch />
+              <p className="text-base sm:text-lg text-blue-200 max-w-2xl mx-auto lg:mx-0 mb-10 leading-relaxed">
+                Do encanador ao arquiteto — portfólio real, avaliações verificadas e contato direto.<br className="hidden sm:block" />
+                Sem intermediários, sem taxas, sem enrolação.
+              </p>
+
+              <HeroSearch />
+            </div>
+
+            {/* Coluna direita: mapa — apenas lg+ */}
+            <div className="hidden lg:block lg:w-130 xl:w-145 shrink-0 self-stretch">
+              <div className="rounded-2xl overflow-hidden shadow-2xl shadow-black/40 ring-1 ring-white/10 h-full relative">
+                <HeroMapWrapper />
+              </div>
+            </div>
+
+          </div>
         </div>
 
         {/* Feature bar */}

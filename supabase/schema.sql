@@ -90,7 +90,7 @@ CREATE TABLE public.professional_profiles (
   subscription_status     subscription_status NOT NULL DEFAULT 'TRIAL',
   trial_ends_at           TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 days'),
   subscription_paid_until TIMESTAMPTZ,
-  stripe_customer_id      TEXT,
+  mercadopago_customer_id TEXT,
   onboarding_completed_at TIMESTAMPTZ DEFAULT NULL,
   created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -371,8 +371,8 @@ CREATE TABLE public.professional_subscriptions (
   id                      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   professional_id         UUID NOT NULL REFERENCES public.professional_profiles(id) ON DELETE CASCADE,
   plan                    TEXT NOT NULL DEFAULT 'MVP_79',
-  stripe_subscription_id  TEXT UNIQUE,
-  stripe_price_id         TEXT,
+  mercadopago_subscription_id TEXT UNIQUE,
+  mercadopago_plan_id         TEXT,
   status                  subscription_status NOT NULL DEFAULT 'TRIAL',
   trial_ends_at           TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 days'),
   current_period_end      TIMESTAMPTZ,
@@ -391,8 +391,7 @@ CREATE TABLE public.payment_transactions (
   amount                NUMERIC(12, 2) NOT NULL,
   currency              TEXT NOT NULL DEFAULT 'BRL',
   status                TEXT NOT NULL CHECK (status IN ('PENDING', 'COMPLETED', 'FAILED', 'REFUNDED')),
-  stripe_payment_id     TEXT UNIQUE,
-  stripe_invoice_id     TEXT,
+  mercadopago_payment_id TEXT UNIQUE,
   created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

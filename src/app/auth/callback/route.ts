@@ -99,6 +99,17 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}${destination}`);
       }
 
+      // Admin não tem perfil subsidiário — redirecionar diretamente
+      const { data: roleCheck } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (roleCheck?.role === "admin") {
+        return NextResponse.redirect(`${origin}/admin`);
+      }
+
       // Contratante novo — salva phone e cria contractor_profiles
       const { phone } = user.user_metadata ?? {};
 
@@ -124,7 +135,11 @@ export async function GET(request: Request) {
         .single();
 
       const destination =
-        profile?.role === "professional" && next === "/" ? "/painel" : next;
+        profile?.role === "admin"
+          ? "/admin"
+          : profile?.role === "professional" && next === "/"
+          ? "/painel"
+          : next;
 
       return NextResponse.redirect(`${origin}${destination}`);
     }

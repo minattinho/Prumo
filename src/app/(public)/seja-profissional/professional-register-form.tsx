@@ -145,6 +145,9 @@ function ProfessionalRegisterFormInner() {
   const [docValidationMessage, setDocValidationMessage] = useState<string>("");
   const [specDropOpen, setSpecDropOpen] = useState(false);
   const specDropRef = useRef<HTMLDivElement>(null);
+  const [birthDay, setBirthDay] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthYear, setBirthYear] = useState("");
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -369,6 +372,19 @@ function ProfessionalRegisterFormInner() {
         </p>
       </div>
     );
+  }
+
+  function getDaysInMonth(month: string, year: string): number {
+    if (!month) return 31;
+    return new Date(parseInt(year) || 2000, parseInt(month), 0).getDate();
+  }
+
+  function handleBirthDateChange(day: string, month: string, year: string) {
+    if (day && month && year) {
+      set("birthDate", `${year}-${month}-${day}`);
+    } else {
+      set("birthDate", "");
+    }
   }
 
   const inputClass =
@@ -635,17 +651,50 @@ function ProfessionalRegisterFormInner() {
                 <DocValidationBadge status={docValidation} message={docValidationMessage} />
               </div>
               <div>
-                <label htmlFor="birthDate" className="block text-sm font-medium text-azul-noite mb-1">
+                <label className="block text-sm font-medium text-azul-noite mb-1">
                   Data de nascimento
                 </label>
-                <input
-                  id="birthDate"
-                  type="date"
-                  value={form.birthDate}
-                  onChange={(e) => set("birthDate", e.target.value)}
-                  max={new Date(Date.now() - 18 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
-                  className={inputClass}
-                />
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="relative">
+                    <select
+                      value={birthDay}
+                      onChange={(e) => { setBirthDay(e.target.value); handleBirthDateChange(e.target.value, birthMonth, birthYear); }}
+                      className={`${inputClass} appearance-none pr-8`}
+                    >
+                      <option value="">Dia</option>
+                      {Array.from({ length: getDaysInMonth(birthMonth, birthYear) }, (_, i) => i + 1).map(d => (
+                        <option key={d} value={String(d).padStart(2, "0")}>{d}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                  <div className="relative">
+                    <select
+                      value={birthMonth}
+                      onChange={(e) => { setBirthMonth(e.target.value); handleBirthDateChange(birthDay, e.target.value, birthYear); }}
+                      className={`${inputClass} appearance-none pr-8`}
+                    >
+                      <option value="">Mês</option>
+                      {["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"].map((m, i) => (
+                        <option key={i} value={String(i + 1).padStart(2, "0")}>{m}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                  <div className="relative">
+                    <select
+                      value={birthYear}
+                      onChange={(e) => { setBirthYear(e.target.value); handleBirthDateChange(birthDay, birthMonth, e.target.value); }}
+                      className={`${inputClass} appearance-none pr-8`}
+                    >
+                      <option value="">Ano</option>
+                      {Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - 18 - i).map(y => (
+                        <option key={y} value={String(y)}>{y}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
               </div>
             </>
           )}

@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
 function LoginFormInner() {
   const router = useRouter();
@@ -34,8 +35,14 @@ function LoginFormInner() {
       ? await supabase.from("profiles").select("role").eq("id", user.id).single()
       : { data: null };
 
-    const destination =
-      profile?.role === "professional" && next === "/" ? "/painel" : next;
+    let destination: string;
+    if (profile?.role === "admin") {
+      destination = "/admin";
+    } else if (profile?.role === "professional" && next === "/") {
+      destination = "/painel";
+    } else {
+      destination = next;
+    }
 
     router.push(destination);
     router.refresh();
@@ -53,13 +60,13 @@ function LoginFormInner() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Google */}
       <button
         type="button"
         onClick={handleGoogleLogin}
         disabled={googleLoading}
-        className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-lg py-2.5 px-4 text-sm font-medium text-azul-noite hover:bg-gray-50 transition-colors disabled:opacity-60"
+        className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-xl py-3 px-4 text-sm font-medium text-azul-noite bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-60 cursor-pointer"
       >
         <GoogleIcon />
         {googleLoading ? "Redirecionando..." : "Continuar com Google"}
@@ -74,10 +81,7 @@ function LoginFormInner() {
       {/* Email + senha */}
       <form onSubmit={handleEmailLogin} className="space-y-4">
         <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-azul-noite mb-1"
-          >
+          <label htmlFor="email" className="block text-sm font-medium text-azul-noite mb-1.5">
             E-mail
           </label>
           <input
@@ -87,18 +91,23 @@ function LoginFormInner() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-azul-noite placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent"
+            className="w-full border border-gray-300 bg-gray-50 rounded-xl px-4 py-3 text-sm text-azul-noite placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent focus:bg-white transition-all duration-200"
             placeholder="seu@email.com"
           />
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-azul-noite mb-1"
-          >
-            Senha
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label htmlFor="password" className="block text-sm font-medium text-azul-noite">
+              Senha
+            </label>
+            <Link
+              href="/recuperar-senha"
+              className="text-xs text-azul-principal hover:underline cursor-pointer"
+            >
+              Esqueceu a senha?
+            </Link>
+          </div>
           <input
             id="password"
             type="password"
@@ -106,21 +115,24 @@ function LoginFormInner() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-azul-noite placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent"
+            className="w-full border border-gray-300 bg-gray-50 rounded-xl px-4 py-3 text-sm text-azul-noite placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent focus:bg-white transition-all duration-200"
             placeholder="••••••••"
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          <div className="flex items-start gap-2.5 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+            <svg className="w-4 h-4 mt-0.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd"/>
+            </svg>
             {error}
-          </p>
+          </div>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-azul-principal hover:bg-azul-noite text-white font-medium rounded-lg py-2.5 text-sm transition-colors disabled:opacity-60"
+          className="w-full bg-azul-principal hover:bg-azul-noite text-white font-semibold rounded-xl py-3 text-sm transition-colors duration-200 disabled:opacity-60 cursor-pointer"
         >
           {loading ? "Entrando..." : "Entrar"}
         </button>
@@ -131,7 +143,7 @@ function LoginFormInner() {
 
 export function LoginForm() {
   return (
-    <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100 rounded-lg" />}>
+    <Suspense fallback={<div className="h-48 animate-pulse bg-gray-100 rounded-xl" />}>
       <LoginFormInner />
     </Suspense>
   );

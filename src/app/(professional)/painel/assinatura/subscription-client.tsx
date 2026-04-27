@@ -184,17 +184,12 @@ export function SubscriptionClient({ status, trialEndsAt, periodEnd, transaction
             </Link>
           )}
           {status === "ACTIVE" && (
-            <div className="relative group inline-block w-full">
-              <button
-                disabled
-                className="w-full flex items-center justify-center gap-2 border border-gray-200 text-cinza-texto font-medium rounded-xl py-3 text-sm cursor-not-allowed opacity-60"
-              >
-                Gerenciar assinatura
-              </button>
-              <span className="absolute left-1/2 -translate-x-1/2 -top-9 text-xs bg-azul-noite text-white px-3 py-1.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                Disponível em breve
-              </span>
-            </div>
+            <a
+              href="mailto:suporte@prumo.com.br?subject=Gerenciar%20assinatura"
+              className="flex items-center justify-center gap-2 w-full border border-gray-200 text-cinza-texto hover:border-azul-principal hover:text-azul-principal font-medium rounded-xl py-3 text-sm transition-colors"
+            >
+              Gerenciar assinatura
+            </a>
           )}
           {(status === "CANCELLED" || status === "SUSPENDED") && (
             <Link
