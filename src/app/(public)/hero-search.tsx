@@ -42,7 +42,7 @@ export function HeroSearch() {
             value={servico}
             onChange={(e) => setServico(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 text-azul-noite text-sm outline-none placeholder:text-gray-400 bg-transparent"
+            className="flex-1 min-w-0 text-azul-noite text-sm outline-none placeholder:text-gray-400 bg-transparent"
           />
         </div>
         <div className="hidden sm:block w-px bg-gray-200 my-2" />
