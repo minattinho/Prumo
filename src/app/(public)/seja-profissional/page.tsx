@@ -162,7 +162,7 @@ export default function SejaProfissionalPage() {
 
                 <p className="mt-6 text-center text-sm text-cinza-texto">
                   Já tem conta?{" "}
-                  <Link href="/entrar" className="text-azul-principal font-medium hover:underline">
+                  <Link href="/profissional" className="text-azul-principal font-medium hover:underline">
                     Entrar
                   </Link>
                 </p>

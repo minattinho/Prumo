@@ -1,42 +1,48 @@
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { SERVICE_CATEGORIES } from "@/types";
 import type { BadgeType } from "@/types";
+import {
+  SERVICE_CATEGORIES,
+  getServiceLabel,
+  serviceValueMatchesFilter,
+} from "@/types/services";
 import { ProfessionalCard } from "./professional-card";
 import { OrdemSelect } from "./ordem-select";
 import { Pagination } from "./pagination";
 
 const PAGE_SIZE = 12;
 
-// Mapeamento de termos comuns para valores de categoria
-const Q_TO_CATEGORY: Record<string, string> = {
-  eletricista: "eletrica",
-  eletricistas: "eletrica",
-  elétrica: "eletrica",
-  eletrica: "eletrica",
-  encanador: "hidraulica",
-  encanadores: "hidraulica",
-  hidráulica: "hidraulica",
-  hidraulica: "hidraulica",
-  pedreiro: "construcao",
-  pedreiros: "construcao",
-  construção: "construcao",
-  construcao: "construcao",
-  pintor: "acabamento",
-  pintores: "acabamento",
-  pintura: "acabamento",
-  marceneiro: "marcenaria",
-  marcenaria: "marcenaria",
-  gesseiro: "acabamento",
-  gesso: "acabamento",
-  engenheiro: "engenharia",
-  engenheiros: "engenharia",
-  engenharia: "engenharia",
-  jardineiro: "jardinagem",
-  jardinagem: "jardinagem",
-  climatização: "climatizacao",
-  climatizacao: "climatizacao",
-  "ar condicionado": "climatizacao",
+const Q_TO_SERVICE: Record<string, string> = {
+  eletricista: "eletricista",
+  eletricistas: "eletricista",
+  eletrica: "eletricista",
+  encanador: "encanador",
+  encanadores: "encanador",
+  hidraulica: "encanador",
+  pedreiro: "pedreiro",
+  pedreiros: "pedreiro",
+  construcao: "pedreiro",
+  pintor: "pintor",
+  pintores: "pintor",
+  pintura: "pintor",
+  marceneiro: "marceneiro",
+  marcenaria: "marceneiro",
+  gesseiro: "gesseiro",
+  gesso: "gesseiro",
+  engenheiro: "engenharia-civil",
+  engenheiros: "engenharia-civil",
+  engenharia: "engenharia-civil",
+  arquitetura: "arquitetura",
+  arquiteto: "arquitetura",
+  climatizacao: "manutencao-de-ar-condicionado",
+  "ar condicionado": "manutencao-de-ar-condicionado",
+  site: "criacao-de-sites",
+  sites: "criacao-de-sites",
+  aplicativo: "desenvolvimento-de-aplicativos",
+  aplicativos: "desenvolvimento-de-aplicativos",
+  chatbot: "chatbots-para-whatsapp",
+  chatbots: "chatbots-para-whatsapp",
+  seo: "seo",
 };
 
 interface SearchResultsProps {
@@ -98,9 +104,7 @@ export async function SearchResults({
   const rows = (data ?? []) as QueryRow[];
 
   const professionals = rows.map((p) => {
-    const specialties = p.professional_specialties.map(
-      (s) => SERVICE_CATEGORIES.find((c) => c.value === s.category)?.label ?? s.category
-    );
+    const specialties = p.professional_specialties.map((s) => getServiceLabel(s.category));
     const specialtyValues = p.professional_specialties.map((s) => s.category);
     const badges = p.verification_badges.map((b) => b.type as BadgeType);
     const portfolioImages = p.portfolio_projects
@@ -117,41 +121,49 @@ export async function SearchResults({
       specialtyValues,
       rating: p.professional_metrics?.average_rating ?? 0,
       reviewCount: p.professional_metrics?.total_evaluations ?? 0,
-      completedServices: p.professional_metrics?.total_completed_services_via_prumo ?? p.professional_metrics?.total_evaluations ?? 0,
+      completedServices:
+        p.professional_metrics?.total_completed_services_via_prumo ??
+        p.professional_metrics?.total_evaluations ??
+        0,
       photoUrl: p.photo_url ?? null,
       badges,
       portfolioImages,
       professionalType: (p.cnpj ? "empresa" : "individual") as "empresa" | "individual",
-      createdAt: p.created_at as string,
+      createdAt: p.created_at,
     };
   });
 
-  // Filtros
   let results = professionals;
 
-  // 1. Busca por texto (q)
-  let qMappedToCategory = "";
+  let qMappedToService = "";
   if (q) {
-    const mapped = Q_TO_CATEGORY[q.toLowerCase().trim()];
+    const normalizedQuery = q.toLowerCase().trim();
+    const mapped =
+      Q_TO_SERVICE[normalizedQuery] ??
+      SERVICE_CATEGORIES.find((service) =>
+        service.label.toLowerCase().includes(normalizedQuery)
+      )?.value;
+
     if (mapped) {
-      qMappedToCategory = mapped;
-      results = results.filter((p) => p.specialtyValues.includes(mapped));
+      qMappedToService = mapped;
+      results = results.filter((p) =>
+        p.specialtyValues.some((value) => serviceValueMatchesFilter(value, mapped))
+      );
     } else {
-      results = results.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
+      results = results.filter((p) => p.name.toLowerCase().includes(normalizedQuery));
     }
   }
 
-  // 2. Categoria (apenas se q não mapeou)
-  if (categoria && !qMappedToCategory) {
-    results = results.filter((p) => p.specialtyValues.includes(categoria));
+  if (categoria && !qMappedToService) {
+    results = results.filter((p) =>
+      p.specialtyValues.some((value) => serviceValueMatchesFilter(value, categoria))
+    );
   }
 
-  // 3. Cidade
   if (cidade) {
     results = results.filter((p) => p.city.toLowerCase().includes(cidade.toLowerCase()));
   }
 
-  // 4. Avaliação mínima
   if (avaliacao) {
     const minRating = parseFloat(avaliacao);
     if (!isNaN(minRating)) {
@@ -159,18 +171,15 @@ export async function SearchResults({
     }
   }
 
-  // 5. Verificação (badges)
   if (verificacao) {
     const requiredBadges = verificacao.split(",") as BadgeType[];
     results = results.filter((p) => requiredBadges.every((b) => p.badges.includes(b)));
   }
 
-  // 6. Tipo de profissional
   if (tipo && tipo !== "todos") {
     results = results.filter((p) => p.professionalType === tipo);
   }
 
-  // Ordenação
   if (!ordem || ordem === "avaliacao") {
     results = [...results].sort((a, b) => b.rating - a.rating);
   } else if (ordem === "obras") {
@@ -179,28 +188,23 @@ export async function SearchResults({
     results = [...results].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
-  // Paginação
   const totalCount = results.length;
   const currentPage = Math.max(1, parseInt(pagina ?? "1", 10));
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
   const paginatedResults = results.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-  // Label de localização para o header
   const locationLabel = cidade ? ` em ${cidade}` : "";
 
   if (totalCount === 0) {
     return (
       <div className="text-center py-20">
-        <p className="text-2xl mb-2">🔍</p>
         <p className="text-azul-noite font-medium mb-1">Nenhum profissional encontrado</p>
-        <p className="text-cinza-texto text-sm">Tenta outros filtros ou uma cidade diferente.</p>
+        <p className="text-cinza-texto text-sm">Tente outros filtros ou uma cidade diferente.</p>
       </div>
     );
   }
 
   return (
     <div>
-      {/* Header: count + ordenação */}
       <div className="flex items-center justify-between mb-6">
         <p className="text-sm text-cinza-texto">
           <span className="font-semibold text-azul-noite">{totalCount}</span>{" "}
@@ -212,14 +216,12 @@ export async function SearchResults({
         </Suspense>
       </div>
 
-      {/* Grid de cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {paginatedResults.map((professional) => (
           <ProfessionalCard key={professional.id} professional={professional} />
         ))}
       </div>
 
-      {/* Paginação */}
       {totalPages > 1 && (
         <Suspense>
           <Pagination currentPage={currentPage} totalPages={totalPages} />

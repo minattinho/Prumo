@@ -13,7 +13,7 @@ export default async function AdminLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/entrar?next=/admin");
+    redirect("/profissional?next=/admin");
   }
 
   const { data: profile } = await supabase

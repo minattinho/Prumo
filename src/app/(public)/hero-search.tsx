@@ -42,7 +42,7 @@ export function HeroSearch() {
             value={servico}
             onChange={(e) => setServico(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 min-w-0 text-azul-noite text-sm outline-none placeholder:text-gray-400 bg-transparent"
+            className="flex-1 min-w-0 text-azul-noite text-sm outline-none focus-visible:outline-none placeholder:text-gray-400 bg-transparent"
           />
         </div>
         <div className="hidden sm:block w-px bg-gray-200 my-2" />
@@ -50,7 +50,7 @@ export function HeroSearch() {
           value={cidade}
           onChange={setCidade}
           className="px-4 py-1 sm:w-52"
-          inputClassName="flex-1 min-w-0 text-azul-noite text-sm outline-none placeholder:text-gray-400 bg-transparent"
+          inputClassName="flex-1 min-w-0 text-azul-noite text-sm outline-none focus-visible:outline-none placeholder:text-gray-400 bg-transparent"
         />
         <button
           onClick={handleBuscar}

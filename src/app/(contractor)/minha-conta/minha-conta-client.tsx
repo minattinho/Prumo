@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Hammer,
 } from "lucide-react";
+import { getServiceLabel } from "@/types/services";
 import { formatDate } from "@/lib/utils";
 import {
   updateContractorProfile,
@@ -147,7 +148,9 @@ function EvaluateModal({
         <div>
           <p className="font-medium text-azul-noite">{proName}</p>
           <p className="text-xs text-cinza-texto">
-            {contact.professional?.professional_specialties?.[0]?.category ?? "Profissional"}
+            {contact.professional?.professional_specialties?.[0]?.category
+              ? getServiceLabel(contact.professional.professional_specialties[0].category)
+              : "Profissional"}
           </p>
         </div>
       </div>
@@ -477,7 +480,7 @@ export function MinhaContaClient({
                       <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                         {c.professional?.professional_specialties?.[0] && (
                           <span className="text-xs bg-azul-claro text-azul-principal px-2 py-0.5 rounded-full font-medium">
-                            {c.professional.professional_specialties[0].category}
+                            {getServiceLabel(c.professional.professional_specialties[0].category)}
                           </span>
                         )}
                         {c.professional?.city && (

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Building2, FileText, HelpCircle, LayoutDashboard, Megaphone, Search, Shield, Tag, UserPlus } from "lucide-react";
 import { Logo } from "./logo";
 
 const socialLinks = [
@@ -35,25 +36,25 @@ const navSections = [
   {
     title: "Para contratantes",
     links: [
-      { label: "Encontrar profissional", href: "/profissionais" },
-      { label: "Criar conta grátis", href: "/cadastro" },
-      { label: "Como funciona", href: "/como-funciona" },
+      { label: "Encontrar profissional", href: "/profissionais", icon: Search },
+      { label: "Criar conta grátis", href: "/contratante?modo=cadastro", icon: UserPlus },
+      { label: "Como funciona", href: "/como-funciona", icon: HelpCircle },
     ],
   },
   {
     title: "Para profissionais",
     links: [
-      { label: "Anunciar serviço", href: "/seja-profissional" },
-      { label: "Painel do profissional", href: "/painel" },
-      { label: "Planos e preços", href: "/planos" },
+      { label: "Anunciar serviço", href: "/seja-profissional", icon: Megaphone },
+      { label: "Painel do profissional", href: "/painel", icon: LayoutDashboard },
+      { label: "Planos e preços", href: "/planos", icon: Tag },
     ],
   },
   {
     title: "Empresa",
     links: [
-      { label: "Sobre o Prumo", href: "/sobre" },
-      { label: "Política de privacidade", href: "/privacidade" },
-      { label: "Termos de uso", href: "/termos" },
+      { label: "Sobre o Prumo", href: "/sobre", icon: Building2 },
+      { label: "Política de privacidade", href: "/privacidade", icon: Shield },
+      { label: "Termos de uso", href: "/termos", icon: FileText },
     ],
   },
 ];
@@ -65,35 +66,18 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
 
           {/* Main grid */}
-          <div className="py-12 grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-8 items-start">
+          <div className="py-10 grid grid-cols-1 lg:grid-cols-4 gap-10 lg:gap-8 items-start">
 
-            {/* Brand — 2 cols wide */}
-            <div className="lg:col-span-2 flex flex-col gap-5">
+            {/* Brand — 1 col wide */}
+            <div className="flex flex-col">
               <Logo variant="white" />
-              <p className="text-sm text-white/50 leading-relaxed max-w-xs">
-                Marketplace de profissionais — do encanador ao arquiteto.
-              </p>
-              <div className="flex items-center gap-2">
-                {socialLinks.map((s) => (
-                  <a
-                    key={s.label}
-                    href={s.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={s.label}
-                    className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:bg-white/10 hover:text-white/80 hover:border-white/20 transition-all duration-200 cursor-pointer"
-                  >
-                    {s.icon}
-                  </a>
-                ))}
-              </div>
             </div>
 
             {/* Nav sections — 3 cols */}
             <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-8">
               {navSections.map((section) => (
                 <div key={section.title}>
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/30 mb-4">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-medio mb-5">
                     {section.title}
                   </h3>
                   <ul className="flex flex-col gap-3">
@@ -101,8 +85,9 @@ export function Footer() {
                       <li key={link.href}>
                         <Link
                           href={link.href}
-                          className="text-sm text-white/55 hover:text-white transition-colors duration-150 cursor-pointer"
+                          className="flex items-center gap-2.5 text-sm text-white/70 hover:text-white transition-colors duration-150 cursor-pointer"
                         >
+                          <link.icon className="w-4 h-4 shrink-0 text-white/40" />
                           {link.label}
                         </Link>
                       </li>

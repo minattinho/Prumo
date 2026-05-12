@@ -12,7 +12,7 @@ export async function Header() {
     : { data: null };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+    <header className="sticky top-0 z-[1000] bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -41,7 +41,7 @@ export async function Header() {
             ) : (
               <>
                 <Link
-                  href="/entrar"
+                  href="/contratante"
                   className="text-sm font-medium text-azul-noite hover:text-azul-principal transition-colors"
                 >
                   Entrar

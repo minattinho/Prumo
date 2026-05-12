@@ -1,7 +1,12 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import {
+  buildPasswordResetRedirectUrl,
+  getDefaultAuthOrigin,
+} from "@/lib/auth/password-reset";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 export async function updateContractorProfile(data: {
   full_name: string;
@@ -59,8 +64,10 @@ export async function submitEvaluation(data: {
 
 export async function sendPasswordReset(email: string) {
   const supabase = await createClient();
+  const requestHeaders = await headers();
+  const origin = requestHeaders.get("origin") ?? getDefaultAuthOrigin();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/redefinir-senha`,
+    redirectTo: buildPasswordResetRedirectUrl(origin),
   });
   if (error) return { error: "Erro ao enviar e-mail" };
   return { success: true };

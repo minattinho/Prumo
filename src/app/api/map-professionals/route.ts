@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { SERVICE_CATEGORIES } from "@/types";
+import { getServiceLabel } from "@/types/services";
 
 type QueryRow = {
   id: string;
@@ -39,10 +39,9 @@ export async function GET() {
     name: p.profiles?.name ?? "Profissional",
     city: p.city.trim(),
     state: p.state,
-    specialty:
-      SERVICE_CATEGORIES.find(
-        (c) => c.value === p.professional_specialties[0]?.category
-      )?.label ?? "Serviços gerais",
+    specialty: p.professional_specialties[0]?.category
+      ? getServiceLabel(p.professional_specialties[0].category)
+      : "Serviços gerais",
     rating: p.professional_metrics?.average_rating ?? 0,
   }));
 

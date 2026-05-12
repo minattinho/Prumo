@@ -4,10 +4,12 @@ import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ChevronRight, ChevronLeft, ChevronDown, Check } from "lucide-react";
+import { PasswordInput } from "@/components/ui/password-input";
 import { CityInput } from "@/components/city-input";
 import { isValidCpf, isValidCnpj } from "@/lib/serpro/validators";
+import { SERVICE_TAXONOMY, getServiceLabel } from "@/types/services";
 
-const CATEGORIES = [
+const LEGACY_CATEGORIES = [
   "Construção",
   "Elétrica",
   "Hidráulica",
@@ -30,6 +32,8 @@ const CATEGORIES = [
   "Demolição",
   "Outros",
 ];
+
+void LEGACY_CATEGORIES;
 
 
 function formatPhone(value: string) {
@@ -465,9 +469,8 @@ function ProfessionalRegisterFormInner() {
             <label htmlFor="password" className="block text-sm font-medium text-azul-noite mb-1">
               Senha
             </label>
-            <input
+            <PasswordInput
               id="password"
-              type="password"
               required
               autoComplete="new-password"
               value={form.password}
@@ -544,7 +547,7 @@ function ProfessionalRegisterFormInner() {
                     : "border-gray-200"
                 } ${form.specialty ? "text-azul-noite" : "text-gray-400"}`}
               >
-                <span>{form.specialty || "Selecione uma especialidade"}</span>
+                <span>{form.specialty ? getServiceLabel(form.specialty) : "Selecione uma especialidade"}</span>
                 <ChevronDown
                   size={15}
                   className={`text-cinza-texto shrink-0 transition-transform ${specDropOpen ? "rotate-180" : ""}`}
@@ -554,25 +557,39 @@ function ProfessionalRegisterFormInner() {
               {specDropOpen && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
                   <div className="py-1 max-h-52 overflow-y-auto">
-                    {CATEGORIES.map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => {
-                          set("specialty", cat);
-                          setSpecDropOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-azul-claro ${
-                          form.specialty === cat
-                            ? "text-azul-principal font-medium bg-azul-claro/50"
-                            : "text-azul-noite"
-                        }`}
-                      >
-                        <span>{cat}</span>
-                        {form.specialty === cat && (
-                          <Check size={13} className="text-azul-principal shrink-0 ml-2" />
-                        )}
-                      </button>
+                    {SERVICE_TAXONOMY.map((category) => (
+                      <div key={category.slug}>
+                        <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase text-cinza-texto">
+                          {category.name}
+                        </div>
+                        {category.subcategories.map((subcategory) => (
+                          <div key={subcategory.slug}>
+                            <div className="px-3 py-1 text-xs font-medium text-azul-noite">
+                              {subcategory.name}
+                            </div>
+                            {subcategory.services.map((service) => (
+                              <button
+                                key={service.slug}
+                                type="button"
+                                onClick={() => {
+                                  set("specialty", service.slug);
+                                  setSpecDropOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between px-3 py-2 pl-5 text-sm text-left transition-colors hover:bg-azul-claro ${
+                                  form.specialty === service.slug
+                                    ? "text-azul-principal font-medium bg-azul-claro/50"
+                                    : "text-azul-noite"
+                                }`}
+                              >
+                                <span>{service.name}</span>
+                                {form.specialty === service.slug && (
+                                  <Check size={13} className="text-azul-principal shrink-0 ml-2" />
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 </div>

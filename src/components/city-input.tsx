@@ -232,8 +232,8 @@ export function CityInput({
   }
 
   return (
-    <div ref={containerRef} className={`relative ${className ?? ""}`}>
-      <div className="flex items-center gap-2">
+    <div ref={containerRef} className={`relative flex items-center ${className ?? ""}`}>
+      <div className="flex items-center gap-2 w-full min-w-0">
         <MapPin size={16} className="text-gray-400 shrink-0" />
         <input
           ref={inputRef}

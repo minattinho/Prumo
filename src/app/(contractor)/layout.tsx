@@ -13,7 +13,7 @@ export default async function ContractorLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/entrar?next=/minha-conta");
+    redirect("/contratante?next=/minha-conta");
   }
 
   const { data: profile } = await supabase

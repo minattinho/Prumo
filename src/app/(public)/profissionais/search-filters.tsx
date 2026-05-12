@@ -3,8 +3,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Star, ChevronDown, Check } from "lucide-react";
-import { SERVICE_CATEGORIES } from "@/types";
 import type { BadgeType } from "@/types";
+import {
+  SERVICE_SUBCATEGORIES,
+  SERVICE_TAXONOMY,
+  getServiceBySlug,
+} from "@/types/services";
 
 
 const RATING_OPTIONS = [
@@ -124,7 +128,10 @@ export function SearchFilters({ categoria, avaliacao, tipo, verificacao }: Sideb
           >
             <span className="truncate">
               {localCategoria
-                ? SERVICE_CATEGORIES.find((c) => c.value === localCategoria)?.label
+                ? getServiceBySlug(localCategoria)?.label ??
+                  SERVICE_TAXONOMY.find((c) => c.slug === localCategoria)?.name ??
+                  SERVICE_SUBCATEGORIES.find((s) => s.slug === localCategoria)?.name ??
+                  localCategoria
                 : "Todas"}
             </span>
             <ChevronDown
@@ -136,22 +143,65 @@ export function SearchFilters({ categoria, avaliacao, tipo, verificacao }: Sideb
           {categoriaOpen && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
               <div className="max-h-52 overflow-y-auto py-1">
-                {[{ value: "", label: "Todas" }, ...SERVICE_CATEGORIES].map((cat) => (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLocalCategoria("");
+                    setCategoriaOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-azul-claro ${
+                    localCategoria === "" ? "text-azul-principal font-medium bg-azul-claro/50" : "text-azul-noite"
+                  }`}
+                >
+                  Todas
+                  {localCategoria === "" && <Check size={13} className="text-azul-principal shrink-0" />}
+                </button>
+                {SERVICE_TAXONOMY.map((category) => (
                   <button
-                    key={cat.value}
+                    key={category.slug}
                     type="button"
                     onClick={() => {
-                      setLocalCategoria(cat.value);
+                      setLocalCategoria(category.slug);
                       setCategoriaOpen(false);
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-azul-claro ${
-                      localCategoria === cat.value ? "text-azul-principal font-medium bg-azul-claro/50" : "text-azul-noite"
+                      localCategoria === category.slug ? "text-azul-principal font-medium bg-azul-claro/50" : "text-azul-noite"
                     }`}
                   >
-                    {cat.label}
-                    {localCategoria === cat.value && <Check size={13} className="text-azul-principal shrink-0" />}
+                    {category.name}
+                    {localCategoria === category.slug && <Check size={13} className="text-azul-principal shrink-0" />}
                   </button>
                 ))}
+                {SERVICE_TAXONOMY.flatMap((category) =>
+                  category.subcategories.flatMap((subcategory) => [
+                    <div
+                      key={`${subcategory.slug}-label`}
+                      className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase text-cinza-texto"
+                    >
+                      {subcategory.name}
+                    </div>,
+                    ...subcategory.services.map((service) => (
+                      <button
+                        key={service.slug}
+                        type="button"
+                        onClick={() => {
+                          setLocalCategoria(service.slug);
+                          setCategoriaOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 pl-5 text-sm text-left transition-colors hover:bg-azul-claro ${
+                          localCategoria === service.slug
+                            ? "text-azul-principal font-medium bg-azul-claro/50"
+                            : "text-azul-noite"
+                        }`}
+                      >
+                        {service.name}
+                        {localCategoria === service.slug && (
+                          <Check size={13} className="text-azul-principal shrink-0" />
+                        )}
+                      </button>
+                    )),
+                  ])
+                )}
               </div>
             </div>
           )}

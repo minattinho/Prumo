@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { MapPin, Star, ShieldCheck, ExternalLink, ChevronRight, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ContactButton } from "./contact-button";
+import { getServiceLabel } from "@/types/services";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -234,7 +235,7 @@ export default async function ProfissionalProfilePage({ params }: Props) {
                   <div className="flex flex-wrap gap-2">
                     {(specialties as any[]).map((s: any) => (
                       <span key={s.category} className="text-sm bg-azul-claro text-azul-principal px-3 py-1 rounded-full font-medium">
-                        {s.category}
+                        {getServiceLabel(s.category)}
                       </span>
                     ))}
                   </div>
@@ -296,7 +297,7 @@ export default async function ProfissionalProfilePage({ params }: Props) {
                                     Destaque
                                   </span>
                                 )}
-                                <span className="text-xs text-cinza-texto">{project.category}</span>
+                                <span className="text-xs text-cinza-texto">{getServiceLabel(project.category)}</span>
                                 {project.city_executed && (
                                   <span className="text-xs text-cinza-texto">· {project.city_executed}</span>
                                 )}
@@ -448,13 +449,13 @@ export default async function ProfissionalProfilePage({ params }: Props) {
                     Faça login para ver as formas de contato deste profissional.
                   </p>
                   <a
-                    href={`/entrar?next=${encodeURIComponent(`/profissionais/${slug}`)}`}
+                    href={`/contratante?next=${encodeURIComponent(`/profissionais/${slug}`)}`}
                     className="w-full bg-azul-principal hover:bg-azul-noite text-white rounded-lg py-2.5 text-sm font-medium text-center transition-colors"
                   >
                     Entrar
                   </a>
                   <a
-                    href="/cadastro"
+                    href={`/contratante?modo=cadastro&next=${encodeURIComponent(`/profissionais/${slug}`)}`}
                     className="w-full border border-gray-200 hover:border-azul-principal text-azul-noite rounded-lg py-2.5 text-sm font-medium text-center transition-colors"
                   >
                     Criar conta grátis

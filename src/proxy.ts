@@ -19,7 +19,13 @@ export async function proxy(request: NextRequest) {
       if (pathname === "/") {
         return NextResponse.redirect(new URL("/painel", request.url));
       }
-      const allowed = ["/painel", "/entrar", "/auth/callback", "/api"];
+      const allowed = [
+        "/painel",
+        "/profissional",
+        "/auth/callback",
+        "/redefinir-senha",
+        "/api",
+      ];
       if (!allowed.some((p) => pathname.startsWith(p))) {
         const mainUrl = request.nextUrl.clone();
         mainUrl.host = host.replace(/^app\./, "");
@@ -70,7 +76,7 @@ export async function proxy(request: NextRequest) {
 
   if ((isProfessionalRoute || isContractorRoute) && !user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/entrar";
+    url.pathname = isProfessionalRoute ? "/profissional" : "/contratante";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }

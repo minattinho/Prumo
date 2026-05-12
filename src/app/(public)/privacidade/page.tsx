@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Política de Privacidade — Prumo",
-  description: "Saiba como o Prumo coleta, usa e protege os seus dados pessoais.",
+  description:
+    "Saiba como o Prumo coleta, usa e protege os seus dados pessoais.",
 };
 
 const LAST_UPDATED = "25 de abril de 2025";
@@ -40,7 +41,7 @@ const SECTIONS = [
     title: "5. Seus direitos (LGPD)",
     content: [
       "Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você tem o direito de: acessar os dados que temos sobre você; solicitar a correção de dados incorretos; solicitar a exclusão dos seus dados; revogar consentimentos previamente dados; obter informações sobre o compartilhamento dos seus dados.",
-      "Para exercer qualquer desses direitos, entre em contato pelo e-mail privacidade@prumo.com.br. Responderemos em até 15 dias úteis.",
+      "Para exercer qualquer desses direitos, entre em contato pelo e-mail contato@prumo.com.br. Responderemos em até 15 dias úteis.",
     ],
   },
   {
@@ -58,7 +59,7 @@ const SECTIONS = [
   {
     title: "8. Contato",
     content: [
-      "Se tiver dúvidas sobre esta política ou sobre como tratamos seus dados, entre em contato com nosso Encarregado de Proteção de Dados (DPO) pelo e-mail privacidade@prumo.com.br.",
+      "Se tiver dúvidas sobre esta política ou sobre como tratamos seus dados, entre em contato com nosso Encarregado de Proteção de Dados (DPO) pelo e-mail contato@prumo.com.br.",
     ],
   },
 ];
@@ -99,7 +100,10 @@ export default function PrivacidadePage() {
                 </h2>
                 <div className="flex flex-col gap-3">
                   {section.content.map((paragraph, i) => (
-                    <p key={i} className="text-cinza-texto leading-relaxed text-base">
+                    <p
+                      key={i}
+                      className="text-cinza-texto leading-relaxed text-base"
+                    >
                       {paragraph}
                     </p>
                   ))}

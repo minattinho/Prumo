@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle } from "lucide-react";
+import { PasswordInput } from "@/components/ui/password-input";
+import { SERVICE_TAXONOMY } from "@/types/services";
 
 type Role = "professional" | "contractor";
 
@@ -136,8 +138,7 @@ export function CreateUserForm() {
       {/* Password */}
       <div>
         <label className="block text-sm font-medium text-azul-noite mb-1.5">Senha</label>
-        <input
-          type="password"
+        <PasswordInput
           required
           minLength={8}
           value={password}
@@ -178,13 +179,24 @@ export function CreateUserForm() {
             <label className="block text-sm font-medium text-azul-noite mb-1.5">
               Especialidade (opcional)
             </label>
-            <input
-              type="text"
+            <select
               value={specialty}
               onChange={(e) => setSpecialty(e.target.value)}
-              placeholder="Ex: Pintor, Eletricista..."
-              className="w-full border border-gray-300 bg-gray-50 rounded-xl px-4 py-3 text-sm text-azul-noite placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent focus:bg-white transition-all"
-            />
+              className="w-full border border-gray-300 bg-gray-50 rounded-xl px-4 py-3 text-sm text-azul-noite focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent focus:bg-white transition-all"
+            >
+              <option value="">Selecione</option>
+              {SERVICE_TAXONOMY.map((category) => (
+                <optgroup key={category.slug} label={category.name}>
+                  {category.subcategories.flatMap((subcategory) =>
+                    subcategory.services.map((service) => (
+                      <option key={service.slug} value={service.slug}>
+                        {subcategory.name} - {service.name}
+                      </option>
+                    ))
+                  )}
+                </optgroup>
+              ))}
+            </select>
           </div>
         </>
       )}

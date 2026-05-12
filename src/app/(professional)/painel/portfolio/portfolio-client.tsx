@@ -37,8 +37,9 @@ import {
   reorderProjects,
   addProjectImage,
 } from "./actions";
+import { SERVICE_TAXONOMY, getServiceLabel } from "@/types/services";
 
-const CATEGORIES = [
+const LEGACY_CATEGORIES = [
   "Construção",
   "Elétrica",
   "Hidráulica",
@@ -58,6 +59,8 @@ const CATEGORIES = [
   "Telhados e Coberturas",
   "Reformas Gerais",
 ];
+
+void LEGACY_CATEGORIES;
 
 type ProjectImage = {
   id: string;
@@ -87,7 +90,7 @@ type FormData = {
 
 const EMPTY_FORM: FormData = {
   title: "",
-  category: "Construção",
+  category: "pedreiro",
   city_executed: "",
   description: "",
   is_featured: false,
@@ -192,7 +195,7 @@ function SortableProjectCard({
             <h3 className="text-sm font-semibold text-azul-noite truncate">{project.title}</h3>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="text-xs bg-azul-claro text-azul-principal px-2 py-0.5 rounded-full">
-                {project.category}
+                {getServiceLabel(project.category)}
               </span>
               {project.city_executed && (
                 <span className="text-xs text-cinza-texto truncate">{project.city_executed}</span>
@@ -372,8 +375,16 @@ function ProjectModal({
                     onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-azul-noite bg-white focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent"
                   >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                    {SERVICE_TAXONOMY.map((category) => (
+                      <optgroup key={category.slug} label={category.name}>
+                        {category.subcategories.flatMap((subcategory) =>
+                          subcategory.services.map((service) => (
+                            <option key={service.slug} value={service.slug}>
+                              {subcategory.name} - {service.name}
+                            </option>
+                          ))
+                        )}
+                      </optgroup>
                     ))}
                   </select>
                 </div>

@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import { CityInput } from "@/components/city-input";
+import { SERVICE_TAXONOMY, getServiceLabel } from "@/types/services";
 import {
   Camera,
   Plus,
@@ -23,7 +24,7 @@ import {
   updateSocialNetworks,
 } from "./actions";
 
-const CATEGORIES = [
+const LEGACY_CATEGORIES = [
   "Construção",
   "Elétrica",
   "Hidráulica",
@@ -45,6 +46,8 @@ const CATEGORIES = [
   "Demolição",
   "Reformas Gerais",
 ];
+
+void LEGACY_CATEGORIES;
 
 const CHANNEL_TYPES = [
   { value: "WHATSAPP", label: "WhatsApp" },
@@ -362,41 +365,58 @@ function EspecialidadesTab({
       <div className="bg-white rounded-card shadow-card p-5 space-y-4">
         <h3 className="text-sm font-semibold text-azul-noite">Especialidades</h3>
         <p className="text-xs text-cinza-texto -mt-2">
-          Selecione as áreas em que você atua.
+          Selecione os serviços em que você atua.
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {CATEGORIES.map((cat) => {
-            const isSelected = selected.has(cat);
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => toggleCategory(cat)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors text-left ${
-                  isSelected
-                    ? "bg-azul-claro border-azul-principal text-azul-principal"
-                    : "border-gray-200 text-cinza-texto hover:border-azul-principal/40 hover:text-azul-noite"
-                }`}
-              >
-                <span
-                  className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                    isSelected ? "bg-azul-principal border-azul-principal" : "border-gray-300"
-                  }`}
-                >
-                  {isSelected && (
-                    <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </span>
-                {cat}
-              </button>
-            );
-          })}
+        <div className="space-y-4">
+          {SERVICE_TAXONOMY.map((category) => (
+            <div key={category.slug} className="space-y-3">
+              <h4 className="text-xs font-semibold text-cinza-texto uppercase">
+                {category.name}
+              </h4>
+              {category.subcategories.map((subcategory) => (
+                <div key={subcategory.slug} className="space-y-2">
+                  <p className="text-xs font-medium text-azul-noite">{subcategory.name}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {subcategory.services.map((service) => {
+                      const isSelected = selected.has(service.slug);
+                      return (
+                        <button
+                          key={service.slug}
+                          type="button"
+                          onClick={() => toggleCategory(service.slug)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors text-left ${
+                            isSelected
+                              ? "bg-azul-claro border-azul-principal text-azul-principal"
+                              : "border-gray-200 text-cinza-texto hover:border-azul-principal/40 hover:text-azul-noite"
+                          }`}
+                        >
+                          <span
+                            className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                              isSelected ? "bg-azul-principal border-azul-principal" : "border-gray-300"
+                            }`}
+                          >
+                            {isSelected && (
+                              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </span>
+                          {service.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
         {errorSpec && <p className="text-sm text-red-600">{errorSpec}</p>}
         <div className="flex items-center justify-between pt-1">
-          <p className="text-xs text-cinza-texto">{selected.size} selecionada(s)</p>
+          <p className="text-xs text-cinza-texto">
+            {selected.size} selecionado(s)
+            {selected.size > 0 ? `: ${Array.from(selected).map(getServiceLabel).join(", ")}` : ""}
+          </p>
           <button
             type="button"
             onClick={saveSpecialties}

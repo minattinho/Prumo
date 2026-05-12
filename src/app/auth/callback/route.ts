@@ -2,10 +2,33 @@ import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
+function getAuthRoute(authSource: string | null, next: string) {
+  if (
+    authSource === "professional" ||
+    next.startsWith("/painel") ||
+    next.startsWith("/admin")
+  ) {
+    return "/profissional";
+  }
+
+  return "/contratante";
+}
+
+function redirectToAuthError(origin: string, authRoute: string, next: string) {
+  const url = new URL(authRoute, origin);
+  url.searchParams.set("error", "auth_callback_error");
+  if (next !== "/") {
+    url.searchParams.set("next", next);
+  }
+  return NextResponse.redirect(url);
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/";
+  const authSource = searchParams.get("auth");
+  const authRoute = getAuthRoute(authSource, next);
   const newProfessional = searchParams.get("new_professional") === "true";
 
   if (code) {
@@ -18,7 +41,7 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        return NextResponse.redirect(`${origin}/entrar?error=auth_callback_error`);
+        return redirectToAuthError(origin, authRoute, next);
       }
 
       const isProfessionalSignup =
@@ -145,5 +168,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/entrar?error=auth_callback_error`);
+  return redirectToAuthError(origin, authRoute, next);
 }

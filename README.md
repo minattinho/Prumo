@@ -80,7 +80,7 @@ src/app/
 
 ### Proteção de rotas
 
-A autorização é feita via **layouts server-side**: cada grupo de rotas tem um `layout.tsx` que consulta o Supabase Server Client, verifica a sessão e o papel (role) do usuário, e redireciona para `/entrar` se necessário. Não há middleware Edge — a proteção acontece no servidor antes de renderizar a página.
+A autorização é feita via **layouts server-side**: cada grupo de rotas tem um `layout.tsx` que consulta o Supabase Server Client, verifica a sessão e o papel (role) do usuário, e redireciona para `/contratante` ou `/profissional` quando necessário. Não há middleware Edge — a proteção acontece no servidor antes de renderizar a página.
 
 ### Clientes Supabase
 
@@ -146,18 +146,18 @@ Ao concluir, o usuário é redirecionado para o painel com status `PENDING` e tr
 
 ### Área de Autenticação
 
-#### `/entrar` — Login
+#### `/contratante` — Login e Cadastro de Contratante
 
-Login unificado para contratantes e profissionais. Suporta:
+Rota única para contratantes. Abre em login por padrão e usa `?modo=cadastro` para exibir o cadastro na mesma tela. Suporta:
 
 - Email + senha
 - Google OAuth
 
-O componente detecta o domínio do host para adaptar a UI (ex.: `app.prumo.com.br` exibe layout do painel profissional). Após login, profissionais são redirecionados para `/painel`, contratantes para a rota anterior ou home.
+Após login, contratantes são redirecionados para a rota anterior via `next` ou para a home. O cadastro cria um perfil com `role=contractor`.
 
-#### `/cadastro` — Cadastro de Contratante
+#### `/profissional` — Login de Profissional e Admin
 
-Formulário simples: nome, email, senha. Cria um perfil com `role=contractor`.
+Login para profissionais e administradores. Após login, profissionais são redirecionados para `/painel` quando não houver `next`, e admins para `/admin`.
 
 ---
 

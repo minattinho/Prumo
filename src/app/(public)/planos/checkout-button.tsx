@@ -11,7 +11,7 @@ export function CheckoutButton({ isLoggedIn, isProfessional }: { isLoggedIn: boo
 
   async function handleClick() {
     if (!isLoggedIn) {
-      router.push("/entrar?next=/planos");
+      router.push("/profissional?next=/planos");
       return;
     }
     if (!isProfessional) {

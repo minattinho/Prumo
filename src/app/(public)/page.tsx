@@ -7,18 +7,9 @@ import {
   ShieldCheck,
   TrendingUp,
   Wrench,
-  Zap,
-  Droplets,
   PaintBucket,
-  SquareStack,
-  Grid2x2,
   Hammer,
-  Leaf,
-  Sparkles,
-  Pencil,
-  Building2,
   Wifi,
-  Wind,
   ArrowRight,
   CheckCircle2,
   Users,
@@ -26,22 +17,63 @@ import {
   Clock,
   Phone,
 } from "lucide-react";
+import { SERVICE_CATEGORIES, SERVICE_TAXONOMY } from "@/types/services";
 
-const CATEGORIES = [
-  { label: "Construção", icon: Hammer, slug: "construcao", color: "bg-amber-50 text-amber-600 group-hover:bg-amber-600" },
-  { label: "Elétrica", icon: Zap, slug: "eletrica", color: "bg-yellow-50 text-yellow-600 group-hover:bg-yellow-500" },
-  { label: "Hidráulica", icon: Droplets, slug: "hidraulica", color: "bg-blue-50 text-blue-600 group-hover:bg-blue-600" },
-  { label: "Acabamento", icon: PaintBucket, slug: "acabamento", color: "bg-rose-50 text-rose-600 group-hover:bg-rose-600" },
-  { label: "Pisos", icon: Grid2x2, slug: "pisos", color: "bg-stone-50 text-stone-600 group-hover:bg-stone-600" },
-  { label: "Serralheria", icon: Wrench, slug: "serralheria", color: "bg-zinc-50 text-zinc-600 group-hover:bg-zinc-600" },
-  { label: "Marcenaria", icon: SquareStack, slug: "marcenaria", color: "bg-orange-50 text-orange-600 group-hover:bg-orange-600" },
-  { label: "Jardinagem", icon: Leaf, slug: "jardinagem", color: "bg-green-50 text-green-600 group-hover:bg-green-600" },
-  { label: "Limpeza", icon: Sparkles, slug: "limpeza", color: "bg-sky-50 text-sky-600 group-hover:bg-sky-600" },
-  { label: "Projeto", icon: Pencil, slug: "projeto", color: "bg-violet-50 text-violet-600 group-hover:bg-violet-600" },
-  { label: "Engenharia", icon: Building2, slug: "engenharia", color: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600" },
-  { label: "Tecnologia", icon: Wifi, slug: "tecnologia", color: "bg-cyan-50 text-cyan-600 group-hover:bg-cyan-600" },
-  { label: "Climatização", icon: Wind, slug: "climatizacao", color: "bg-teal-50 text-teal-600 group-hover:bg-teal-600" },
-];
+const CATEGORY_ICONS = {
+  home: Hammer,
+  wrench: Wrench,
+  code: Wifi,
+  palette: PaintBucket,
+  megaphone: TrendingUp,
+} as const;
+
+const CATEGORY_STYLES = [
+  {
+    color: "bg-amber-50 text-amber-600 group-hover:bg-amber-500 group-hover:text-white",
+    accent: "bg-amber-500",
+    chip: "bg-amber-50 text-amber-700 hover:bg-amber-100",
+  },
+  {
+    color: "bg-zinc-50 text-zinc-600 group-hover:bg-zinc-500 group-hover:text-white",
+    accent: "bg-zinc-500",
+    chip: "bg-zinc-50 text-zinc-700 hover:bg-zinc-100",
+  },
+  {
+    color: "bg-cyan-50 text-cyan-600 group-hover:bg-cyan-500 group-hover:text-white",
+    accent: "bg-cyan-500",
+    chip: "bg-cyan-50 text-cyan-700 hover:bg-cyan-100",
+  },
+  {
+    color: "bg-rose-50 text-rose-600 group-hover:bg-rose-500 group-hover:text-white",
+    accent: "bg-rose-500",
+    chip: "bg-rose-50 text-rose-700 hover:bg-rose-100",
+  },
+  {
+    color: "bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white",
+    accent: "bg-green-500",
+    chip: "bg-green-50 text-green-700 hover:bg-green-100",
+  },
+] as const;
+
+const CATEGORIES = SERVICE_TAXONOMY.map((category, index) => {
+  const services = category.subcategories.flatMap((subcategory) =>
+    subcategory.services.map((service) => ({
+      ...service,
+      subcategoryName: subcategory.name,
+    }))
+  );
+  const style = CATEGORY_STYLES[index] ?? CATEGORY_STYLES[0];
+
+  return {
+    label: category.name,
+    icon: CATEGORY_ICONS[category.icon],
+    slug: category.slug,
+    serviceCount: services.length,
+    subcategoryNames: category.subcategories.map((subcategory) => subcategory.name),
+    previewServices: services.slice(0, 4),
+    ...style,
+  };
+});
 
 const HOW_IT_WORKS = [
   {
@@ -92,7 +124,7 @@ export default function HomePage() {
     <div className="flex flex-col">
 
       {/* ─── HERO ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-azul-noite">
+      <section className="relative isolate overflow-hidden bg-azul-noite">
         {/* Geometric background pattern */}
         <div className="absolute inset-0 opacity-[0.04]" aria-hidden="true">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -154,7 +186,7 @@ export default function HomePage() {
             {[
               { label: "Contato direto", sublabel: "Sem intermediários ou taxas" },
               { label: "Portfólio verificado", sublabel: "Fotos de obras reais" },
-              { label: `${CATEGORIES.length} categorias`, sublabel: "De construção a projeto" },
+              { label: `${SERVICE_CATEGORIES.length} serviços`, sublabel: `${CATEGORIES.length} categorias principais` },
             ].map(({ label, sublabel }) => (
               <div key={label} className="text-center px-4">
                 <div className="text-sm sm:text-base font-bold text-white">{label}</div>
@@ -172,7 +204,9 @@ export default function HomePage() {
             <div>
               <p className="text-xs font-semibold text-laranja-obra uppercase tracking-widest mb-2">Categorias</p>
               <h2 className="text-2xl sm:text-3xl font-bold text-azul-noite">O que você precisa?</h2>
-              <p className="text-cinza-texto mt-2 text-sm">{CATEGORIES.length} especialidades para cada etapa do seu imóvel</p>
+              <p className="text-cinza-texto mt-2 text-sm">
+                {CATEGORIES.length} categorias e {SERVICE_CATEGORIES.length} serviços para cada etapa do seu imóvel
+              </p>
             </div>
             <Link
               href="/profissionais"
@@ -183,18 +217,39 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-3">
-            {CATEGORIES.map(({ label, icon: Icon, slug, color }) => (
-              <Link
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {CATEGORIES.map(({ label, icon: Icon, slug, color, accent, chip, serviceCount, subcategoryNames, previewServices }) => (
+              <div
                 key={slug}
-                href={`/profissionais?categoria=${slug}`}
-                className="flex flex-col items-center gap-2.5 p-4 rounded-2xl bg-white border border-gray-100 hover:border-azul-principal hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group cursor-pointer"
+                className="group relative rounded-2xl bg-white border border-gray-100 overflow-hidden hover:border-transparent hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
               >
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors duration-200 ${color} group-hover:text-white`}>
-                  <Icon size={20} />
+                <div className={`absolute top-0 inset-x-0 h-[3px] ${accent}`} />
+                <Link href={`/profissionais?categoria=${slug}`} className="block p-5 cursor-pointer">
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 group-hover:scale-105 ${color}`}>
+                      <Icon size={22} />
+                    </div>
+                    <span className="text-xs font-semibold text-cinza-texto bg-gray-50 border border-gray-100 rounded-full px-2.5 py-1">
+                      {serviceCount} serviços
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-bold text-azul-noite leading-tight mb-2">{label}</h3>
+                  <p className="text-xs text-cinza-texto leading-relaxed min-h-8">
+                    {subcategoryNames.join(" • ")}
+                  </p>
+                </Link>
+                <div className="px-5 pb-5 flex flex-wrap gap-2">
+                  {previewServices.map((service) => (
+                    <Link
+                      key={service.slug}
+                      href={`/profissionais?categoria=${service.slug}`}
+                      className={`text-xs font-medium rounded-full px-2.5 py-1 transition-colors ${chip}`}
+                    >
+                      {service.name}
+                    </Link>
+                  ))}
                 </div>
-                <span className="text-xs font-medium text-azul-noite text-center leading-tight">{label}</span>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
@@ -315,7 +370,7 @@ export default function HomePage() {
                   Criar meu perfil grátis
                   <ArrowRight size={18} />
                 </Link>
-                <p className="text-xs text-blue-300">Já tem conta? <Link href="/entrar" className="underline hover:text-white transition-colors cursor-pointer">Entre aqui</Link></p>
+                <p className="text-xs text-blue-300">Já tem conta? <Link href="/profissional" className="underline hover:text-white transition-colors cursor-pointer">Entre aqui</Link></p>
               </div>
             </div>
           </div>

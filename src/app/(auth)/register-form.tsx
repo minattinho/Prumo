@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { PasswordInput } from "@/components/ui/password-input";
 import { createClient } from "@/lib/supabase/client";
+
+type RegisterFormProps = {
+  defaultNext?: string;
+  onSuccess?: () => void;
+};
 
 function getPasswordStrength(pwd: string): number {
   if (pwd.length === 0) return 0;
@@ -20,7 +27,10 @@ const STRENGTH_CONFIG = [
   { label: "Forte", color: "bg-green-500" },
 ];
 
-export function RegisterForm() {
+function RegisterFormInner({ defaultNext = "/", onSuccess }: RegisterFormProps) {
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") ?? defaultNext;
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -33,12 +43,21 @@ export function RegisterForm() {
   const passwordStrength = getPasswordStrength(password);
   const strengthInfo = STRENGTH_CONFIG[passwordStrength];
 
+  function getCallbackUrl() {
+    const callbackParams = new URLSearchParams({
+      next,
+      auth: "contractor",
+    });
+    return `${window.location.origin}/auth/callback?${callbackParams.toString()}`;
+  }
+
   function formatPhone(value: string) {
     const digits = value.replace(/\D/g, "").slice(0, 11);
     if (digits.length <= 2) return digits;
     if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-    if (digits.length <= 10)
+    if (digits.length <= 10) {
       return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    }
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   }
 
@@ -48,7 +67,7 @@ export function RegisterForm() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: getCallbackUrl(),
       },
     });
   }
@@ -70,7 +89,7 @@ export function RegisterForm() {
       password,
       options: {
         data: { full_name: name, phone: phone || null },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: getCallbackUrl(),
       },
     });
 
@@ -85,20 +104,34 @@ export function RegisterForm() {
     }
 
     setSuccess(true);
+    onSuccess?.();
   }
 
   if (success) {
     return (
-      <div className="text-center py-6">
+      <div data-register-success="true" className="text-center py-6">
         <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          <svg
+            className="w-7 h-7 text-green-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
           </svg>
         </div>
-        <h2 className="text-lg font-bold text-azul-noite mb-2">Pronto! Confirma o e-mail</h2>
+        <h2 className="text-lg font-bold text-azul-noite mb-2">
+          Pronto! Confirma o e-mail
+        </h2>
         <p className="text-sm text-cinza-texto leading-relaxed">
           Enviamos um link de confirmação para{" "}
-          <strong className="text-azul-noite">{email}</strong>. Abre lá e clica no link para ativar sua conta.
+          <strong className="text-azul-noite">{email}</strong>. Abre lá e clica
+          no link para ativar sua conta.
         </p>
       </div>
     );
@@ -109,7 +142,6 @@ export function RegisterForm() {
 
   return (
     <div className="space-y-4">
-      {/* Google */}
       <button
         type="button"
         onClick={handleGoogleSignup}
@@ -126,10 +158,12 @@ export function RegisterForm() {
         <div className="flex-1 h-px bg-gray-200" />
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-azul-noite mb-1">
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-azul-noite mb-1"
+          >
             Nome completo
           </label>
           <input
@@ -145,7 +179,10 @@ export function RegisterForm() {
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-azul-noite mb-1">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-azul-noite mb-1"
+          >
             E-mail
           </label>
           <input
@@ -161,7 +198,10 @@ export function RegisterForm() {
         </div>
 
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-azul-noite mb-1">
+          <label
+            htmlFor="phone"
+            className="block text-sm font-medium text-azul-noite mb-1"
+          >
             Telefone{" "}
             <span className="text-cinza-texto font-normal">(opcional)</span>
           </label>
@@ -177,12 +217,14 @@ export function RegisterForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-azul-noite mb-1">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-azul-noite mb-1"
+          >
             Senha
           </label>
-          <input
+          <PasswordInput
             id="password"
-            type="password"
             required
             autoComplete="new-password"
             value={password}
@@ -190,7 +232,6 @@ export function RegisterForm() {
             className={inputClass}
             placeholder="Mínimo 8 caracteres"
           />
-          {/* Password strength indicator */}
           {password.length > 0 && (
             <div className="mt-2">
               <div className="flex gap-1">
@@ -203,15 +244,25 @@ export function RegisterForm() {
                   />
                 ))}
               </div>
-              <p className="text-xs mt-1 text-cinza-texto">{strengthInfo.label}</p>
+              <p className="text-xs mt-1 text-cinza-texto">
+                {strengthInfo.label}
+              </p>
             </div>
           )}
         </div>
 
         {error && (
           <div className="flex items-start gap-2.5 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-            <svg className="w-4 h-4 mt-0.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd"/>
+            <svg
+              className="w-4 h-4 mt-0.5 shrink-0"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+                clipRule="evenodd"
+              />
             </svg>
             {error}
           </div>
@@ -227,12 +278,33 @@ export function RegisterForm() {
 
         <p className="text-xs text-cinza-texto text-center leading-relaxed">
           Ao criar sua conta, você concorda com nossos{" "}
-          <a href="/termos" className="underline hover:text-azul-principal cursor-pointer">Termos de Uso</a>{" "}
+          <a
+            href="/termos"
+            className="underline hover:text-azul-principal cursor-pointer"
+          >
+            Termos de Uso
+          </a>{" "}
           e{" "}
-          <a href="/privacidade" className="underline hover:text-azul-principal cursor-pointer">Política de Privacidade</a>.
+          <a
+            href="/privacidade"
+            className="underline hover:text-azul-principal cursor-pointer"
+          >
+            Política de Privacidade
+          </a>
+          .
         </p>
       </form>
     </div>
+  );
+}
+
+export function RegisterForm(props: RegisterFormProps) {
+  return (
+    <Suspense
+      fallback={<div className="h-64 animate-pulse bg-gray-100 rounded-xl" />}
+    >
+      <RegisterFormInner {...props} />
+    </Suspense>
   );
 }
 

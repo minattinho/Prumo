@@ -14,7 +14,7 @@ export default async function ProfessionalLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/entrar?next=/painel");
+    redirect("/profissional?next=/painel");
   }
 
   const { data: profile } = await supabase
