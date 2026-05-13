@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { HeroSearch } from "./hero-search";
 import { HeroMapWrapper } from "./hero-map-wrapper";
 import { FAQ } from "@/components/FAQ";
 import { SocialProof } from "@/components/SocialProof";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 import {
   Search,
   Star,

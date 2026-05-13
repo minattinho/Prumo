@@ -3,7 +3,6 @@ import { Inter, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { CanonicalLink } from "./canonical-link";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -15,7 +14,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Meu Prumo",
+    default: "Prumo — Marketplace de Profissionais",
     template: "%s | Prumo",
   },
   description:
@@ -23,9 +22,6 @@ export const metadata: Metadata = {
   keywords: ["pedreiro", "eletricista", "encanador", "reforma", "construção", "obra", "profissional"],
   authors: [{ name: "Prumo" }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_MAIN_URL ?? "https://prumo-five.vercel.app"),
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     locale: "pt_BR",
@@ -53,7 +49,6 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={cn("h-full", "antialiased", inter.variable, "font-sans", geist.variable)}>
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
-        <CanonicalLink />
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>
