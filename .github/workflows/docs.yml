@@ -1,0 +1,39 @@
+name: Deploy Docs to Vercel
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          key: mkdocs-material
+          path: ~/.cache/pip
+
+      - name: Build docs
+        run: |
+          pip install mkdocs-material
+          mkdocs build --strict
+
+      - name: Deploy to Vercel
+        run: npx vercel deploy site/ --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
