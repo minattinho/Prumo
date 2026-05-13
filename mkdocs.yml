@@ -1,0 +1,81 @@
+site_name: Prumo — Documentação
+site_description: Marketplace SaaS de profissionais verificados para construção e reforma
+site_url: https://docs.meuprumo.com.br
+repo_url: https://github.com/seu-usuario/prumo
+repo_name: prumo
+
+theme:
+  name: material
+  language: pt
+  palette:
+    - scheme: default
+      primary: orange
+      accent: deep-orange
+      toggle:
+        icon: material/brightness-7
+        name: Modo escuro
+    - scheme: slate
+      primary: orange
+      accent: deep-orange
+      toggle:
+        icon: material/brightness-4
+        name: Modo claro
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.tabs.link
+  font:
+    text: Inter
+    code: JetBrains Mono
+
+plugins:
+  - search:
+      lang: pt
+
+nav:
+  - Início: index.md
+  - Produto:
+    - Visão Geral: produto/visao-geral.md
+    - Como Funciona: produto/como-funciona.md
+    - Categorias de Serviço: produto/categorias.md
+    - Monetização: produto/monetizacao.md
+  - Técnico:
+    - Stack e Arquitetura: tecnico/arquitetura.md
+    - Rotas e Telas: tecnico/rotas.md
+    - Regras de Negócio: tecnico/regras-de-negocio.md
+    - Autenticação: tecnico/autenticacao.md
+    - Pagamentos: tecnico/pagamentos.md
+    - Validação de Documentos: tecnico/documentos.md
+    - Upload de Mídia: tecnico/midia.md
+    - Email: tecnico/email.md
+    - Analytics: tecnico/analytics.md
+  - Banco de Dados:
+    - Schema Completo: banco-de-dados/schema.md
+    - Políticas RLS: banco-de-dados/rls.md
+    - Enums: banco-de-dados/enums.md
+  - API:
+    - Endpoints: api/endpoints.md
+    - APIs Externas: api/externas.md
+  - Desenvolvimento:
+    - Configuração Local: dev/setup.md
+    - Variáveis de Ambiente: dev/env-vars.md
+    - Deploy: dev/deploy.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - tables
+  - toc:
+      permalink: true

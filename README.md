@@ -1,44 +1,33 @@
 # Prumo
 
-Marketplace brasileiro de profissionais de construção e reforma. Conecta contratantes que precisam de serviços a profissionais verificados, com portfólio, avaliações e comunicação direta.
+> Marketplace SaaS brasileiro que conecta contratantes a profissionais verificados de construção, reforma e serviços especializados.
+
+**Stack:** Next.js 16 · TypeScript · Tailwind v4 · Supabase · Mercado Pago · Resend · PostHog
+
+---
+
+## O que é o Prumo
+
+O Prumo resolve um problema duplo no mercado brasileiro de serviços:
+
+- **Contratante** — dificuldade de encontrar profissionais confiáveis e verificados na sua região
+- **Profissional** — falta de vitrine digital acessível para divulgar trabalho, portfólio e receber clientes
+
+**Modelo de negócio:** profissionais pagam R$79/mês para manter perfil ativo. Contratantes acessam gratuitamente.
 
 ---
 
 ## Sumário
 
-1. [Visão Geral](#visão-geral)
-2. [Objetivos do Produto](#objetivos-do-produto)
-3. [Stack Técnica](#stack-técnica)
-4. [Arquitetura](#arquitetura)
-5. [Telas e Funcionalidades](#telas-e-funcionalidades)
-6. [Regras de Negócio](#regras-de-negócio)
-7. [Monetização](#monetização)
-8. [Banco de Dados](#banco-de-dados)
-9. [APIs Externas](#apis-externas)
-10. [Variáveis de Ambiente](#variáveis-de-ambiente)
-11. [Como Rodar Localmente](#como-rodar-localmente)
-
----
-
-## Visão Geral
-
-O Prumo é um marketplace SaaS focado no mercado de construção civil e reforma residencial/comercial. Ele resolve dois problemas:
-
-- **Contratante**: dificuldade em encontrar profissionais confiáveis e verificados na sua região
-- **Profissional**: falta de uma vitrine digital acessível para divulgar seu trabalho, portfólio e receber clientes
-
-A plataforma funciona com dois perfis distintos de usuário: **Contratante** (quem contrata) e **Profissional** (quem oferece o serviço). Profissionais pagam uma assinatura mensal para manter seu perfil ativo e visível na busca. Contratantes acessam gratuitamente.
-
----
-
-## Objetivos do Produto
-
-- Centralizar a busca por profissionais de serviços gerais de construção/reforma
-- Garantir confiança com validação de CPF/CNPJ via SERPRO (Receita Federal)
-- Permitir avaliações verificadas (somente contratantes que efetivamente contataram o profissional podem avaliar)
-- Dar ao profissional uma vitrine digital com portfólio de imagens e vídeos
-- Facilitar orçamentos via sistema de solicitações e propostas dentro da plataforma
-- Monetizar via assinatura recorrente dos profissionais
+1. [Stack Técnica](#stack-técnica)
+2. [Arquitetura](#arquitetura)
+3. [Rotas e Funcionalidades](#rotas-e-funcionalidades)
+4. [Regras de Negócio](#regras-de-negócio)
+5. [Banco de Dados](#banco-de-dados)
+6. [APIs Externas](#apis-externas)
+7. [Variáveis de Ambiente](#variáveis-de-ambiente)
+8. [Como Rodar Localmente](#como-rodar-localmente)
+9. [Categorias de Serviço](#categorias-de-serviço)
 
 ---
 
@@ -46,62 +35,97 @@ A plataforma funciona com dois perfis distintos de usuário: **Contratante** (qu
 
 | Camada | Tecnologia |
 |---|---|
-| Framework | Next.js 16 (App Router) |
-| Linguagem | TypeScript |
-| Estilo | Tailwind CSS v4 |
-| Banco de dados | Supabase (PostgreSQL) |
+| Framework | Next.js 16 (App Router, SSR, Server Actions) |
+| Linguagem | TypeScript 5 |
+| Estilo | Tailwind CSS v4 + PostCSS |
+| UI | Radix UI + shadcn/ui |
+| Formulários | React Hook Form + Zod |
+| Banco de dados | Supabase (PostgreSQL + RLS) |
 | Auth | Supabase Auth (email/senha + Google OAuth) |
-| Storage | Supabase Storage |
-| Mídia (imagens/vídeos) | Cloudinary |
-| Pagamentos | Stripe |
-| Email | Resend |
+| Storage | Supabase Storage + Cloudinary (CDN de mídia) |
+| Pagamentos | Mercado Pago (PreApproval — assinaturas recorrentes) |
+| Email | Resend (templates React) |
 | Analytics | PostHog |
 | Validação de documentos | SERPRO API (CPF/CNPJ via Receita Federal) |
-| Cidades brasileiras | IBGE API |
 | Geocodificação | BigDataCloud |
+| Cidades brasileiras | IBGE API |
 | Mapas | Leaflet + React-Leaflet |
-| Formulários | React Hook Form + Zod |
-| Componentes | Radix UI + shadcn/ui |
+| Drag-and-drop | @dnd-kit |
+| Gráficos | Recharts |
 
 ---
 
 ## Arquitetura
 
-O projeto usa o **App Router** do Next.js com grupos de rotas para separar contextos de autenticação e autorização:
+### Estrutura de Rotas (Next.js App Router)
 
 ```
 src/app/
-├── (public)/          # Acesso irrestrito
-├── (auth)/            # Login e cadastro
-├── (professional)/    # Requer autenticação + role=professional
-├── (contractor)/      # Requer autenticação + role=contractor
-└── api/               # API Routes (REST)
+├── (public)/              # Acesso irrestrito
+│   ├── page.tsx           # Home
+│   ├── profissionais/     # Busca e perfil público
+│   ├── seja-profissional/ # Cadastro de profissional (3 etapas)
+│   ├── planos/            # Preços e checkout
+│   └── sobre|termos|privacidade/
+│
+├── (auth)/                # Login e cadastro
+│   ├── contratante/       # Login + signup de contratante
+│   ├── profissional/      # Login de profissional e admin
+│   └── redefinir-senha/
+│
+├── (professional)/painel/ # Requer role=professional
+│   ├── page.tsx           # Dashboard com métricas
+│   ├── perfil/            # Editor de perfil público
+│   ├── portfolio/         # Gerenciador de projetos
+│   ├── servicos/          # Histórico de serviços
+│   ├── solicitacoes/      # Inbox de orçamentos
+│   ├── avaliacoes/        # Avaliações recebidas
+│   ├── assinatura/        # Gestão de assinatura
+│   ├── acessos/           # Logs de visitas ao perfil
+│   └── configuracoes/     # Preferências da conta
+│
+├── (contractor)/          # Requer role=contractor
+│   └── minha-conta/       # Dashboard do contratante
+│
+├── (admin)/admin/         # Requer role=admin
+│   ├── page.tsx           # Dashboard admin
+│   ├── usuarios/          # Listagem de usuários
+│   └── criar-usuario/     # Criação manual de usuário
+│
+└── api/                   # Route Handlers (REST)
+    ├── auth/callback/     # OAuth callback
+    ├── upload/            # Upload para Supabase/Cloudinary
+    ├── map-professionals/ # Dados do mapa (cache 5min)
+    ├── geocode/           # Geocodificação reversa
+    ├── serpro/            # Validação CPF/CNPJ
+    ├── emails/            # Envio de emails transacionais
+    ├── mercadopago/       # Checkout e planos
+    └── admin/             # Endpoints administrativos
 ```
 
-### Proteção de rotas
+### Proteção de Rotas
 
-A autorização é feita via **layouts server-side**: cada grupo de rotas tem um `layout.tsx` que consulta o Supabase Server Client, verifica a sessão e o papel (role) do usuário, e redireciona para `/contratante` ou `/profissional` quando necessário. Não há middleware Edge — a proteção acontece no servidor antes de renderizar a página.
+Autorização via **layouts server-side**: cada grupo de rotas tem `layout.tsx` que consulta o Supabase Server Client, verifica sessão e `role`, e redireciona conforme necessário. Não há middleware Edge.
 
 ### Clientes Supabase
 
-- `src/lib/supabase/server.ts` — Client SSR para Server Components e Route Handlers (usa cookies)
-- `src/lib/supabase/client.ts` — Client browser para Client Components
+| Arquivo | Uso |
+|---|---|
+| `src/lib/supabase/server.ts` | Server Components, Route Handlers, Server Actions (lê cookies) |
+| `src/lib/supabase/client.ts` | Client Components (browser) |
 
 ---
 
-## Telas e Funcionalidades
+## Rotas e Funcionalidades
 
 ### Área Pública
 
 #### `/` — Home
 
-Página de entrada do produto. Contém:
-
-- **HeroSearch**: campo de busca com autocomplete de categorias e cidades
-- **HeroMap**: mapa interativo (Leaflet) mostrando profissionais ativos com geolocalização do visitante como centro
-- **Categorias em destaque**: grid com as 13 categorias de serviço disponíveis, clicáveis para filtrar a busca
-- **Como funciona**: fluxo visual explicando o processo (buscar → contatar → contratar → avaliar)
-- **Depoimentos**: avaliações de contratantes reais
+- **HeroSearch**: busca com autocomplete de categorias e cidades (IBGE)
+- **HeroMap**: mapa interativo (Leaflet) com profissionais ativos, centralizando na localização do visitante
+- Grid de categorias clicáveis
+- Seção "Como funciona" + depoimentos
 
 #### `/profissionais` — Busca de Profissionais
 
@@ -112,152 +136,55 @@ Listagem paginada com busca full-text e filtros via query string:
 | `q` | Texto livre (nome, especialidade) |
 | `categoria` | Categoria de serviço |
 | `cidade` | Cidade de atuação |
-| `ordem` | Critério de ordenação (avaliação, recência) |
+| `ordem` | Critério de ordenação |
 | `avaliacao` | Nota mínima (1–5) |
-| `verificacao` | Apenas profissionais verificados (CNPJ/CPF validado) |
+| `verificacao` | Apenas profissionais com documento validado |
 | `tipo` | Pessoa Física ou Jurídica |
 | `pagina` | Paginação |
 
-Cada card exibe: foto, nome, especialidades, cidade, nota média, badge de verificação e preview do portfólio.
-
 #### `/profissionais/[slug]` — Perfil do Profissional
 
-Página pública e indexável (SEO) de cada profissional. Contém:
+Página pública e indexável (SSR para SEO). Exibe:
 
 - Foto, nome, bio, cidade, raio de atendimento
 - Badges de verificação (VERIFIED, TRUSTWORTHY, CERTIFIED)
-- Especialidades e affinities (tags livres)
-- Portfólio: projetos com galeria de imagens/vídeos, título, categoria, cidade de execução
-- Canais de contato: WhatsApp, Telefone, Email, Instagram, Facebook, Site (cada visualização gera um `contact_log`)
-- Redes sociais: Instagram, Facebook, TikTok, LinkedIn, YouTube
-- Avaliações de contratantes com notas, comentários e resposta do profissional
+- Especialidades e tags livres (affinities)
+- Portfólio com galeria de imagens/vídeos por projeto
+- Canais de contato revelados sob demanda (cada visualização gera `contact_log`)
+- Redes sociais
+- Avaliações de contratantes com possibilidade de resposta do profissional
 
 #### `/seja-profissional` — Cadastro de Profissional
 
-Formulário de 3 etapas para registro de novos profissionais:
+Onboarding em 3 etapas:
+1. **Conta** — email, senha ou Google OAuth, nome, telefone
+2. **Perfil** — especialidade principal, cidade, foto, bio
+3. **Documentos** — CPF ou CNPJ validado via SERPRO
 
-1. **Conta**: email, senha (ou Google OAuth), nome completo, telefone
-2. **Perfil**: especialidade principal, cidade, foto, bio
-3. **Documentos**: CPF ou CNPJ validado via SERPRO em tempo real
-
-Ao concluir, o usuário é redirecionado para o painel com status `PENDING` e trial de 30 dias iniciado.
-
----
-
-### Área de Autenticação
-
-#### `/contratante` — Login e Cadastro de Contratante
-
-Rota única para contratantes. Abre em login por padrão e usa `?modo=cadastro` para exibir o cadastro na mesma tela. Suporta:
-
-- Email + senha
-- Google OAuth
-
-Após login, contratantes são redirecionados para a rota anterior via `next` ou para a home. O cadastro cria um perfil com `role=contractor`.
-
-#### `/profissional` — Login de Profissional e Admin
-
-Login para profissionais e administradores. Após login, profissionais são redirecionados para `/painel` quando não houver `next`, e admins para `/admin`.
-
----
+Ao concluir: status `PENDING`, trial de 30 dias iniciado.
 
 ### Painel do Profissional (`/painel`)
 
-Área protegida acessível somente a usuários autenticados com `role=professional`. Inclui sidebar de navegação e tour de onboarding para novos usuários.
-
-#### `/painel` — Dashboard
-
-Visão consolidada do desempenho. Exibe:
-
-- **Status da assinatura**: trial ativo (com dias restantes), assinatura ativa ou suspensa
-- **Completude do perfil**: barra de progresso com checklist (foto, bio, especialidades, canais de contato, projetos no portfólio)
-- **Métricas de performance**: visualizações de perfil, contatos recebidos, nota média, número de avaliações
-- **Atalhos**: links diretos para editar perfil, portfólio, serviços e solicitações
-
-#### `/painel/perfil` — Editor de Perfil
-
-Edição completa do perfil público. Campos:
-
-- Foto de perfil (upload para Cloudinary)
-- Bio / descrição pessoal
-- Especialidades (múltiplas, das 13 categorias disponíveis)
-- Affinities: tags livres para descrever serviços específicos
-- Canais de contato: WhatsApp, Telefone, Email, Instagram, Facebook, Site, Outro (com marcação de canal primário)
-- Redes sociais: handles de Instagram, Facebook, TikTok, LinkedIn, YouTube
-- Cidade, estado e raio de atendimento em km
-
-#### `/painel/portfolio` — Portfólio
-
-Gerenciamento dos projetos exibidos no perfil público. Funcionalidades:
-
-- Criar/editar projetos com: título, categoria, cidade onde foi executado, descrição
-- Upload de múltiplas imagens e vídeos por projeto (Cloudinary)
-- Reordenar imagens via drag-and-drop
-- Marcar até **3 projetos como destaque** (aparecem em posição privilegiada no perfil)
-- Toda mídia passa por moderação antes de ser publicada (status: PENDING → APPROVED/REJECTED)
-
-#### `/painel/servicos` — Serviços Realizados
-
-Histórico de serviços concluídos (separado do portfólio). Permite registrar:
-
-- Nome do cliente, tipo de serviço, valor cobrado, data de execução
-- Origem: via Prumo, indicação ou outro canal
-- Status: em andamento ou concluído
-- Fotos do serviço (com opção de mover para o portfólio)
-
-#### `/painel/solicitacoes` — Solicitações de Orçamento
-
-Caixa de entrada de pedidos de orçamento enviados por contratantes. Cada solicitação mostra:
-
-- Nome do contratante, mensagem, data
-- Status: NOVA, RESPONDIDA, EM NEGOCIAÇÃO, RECUSADA
-
-#### `/painel/solicitacoes/[id]/proposta` — Criar Proposta
-
-Formulário de resposta a uma solicitação de orçamento. Campos:
-
-- Valor total do serviço
-- Prazo estimado (em dias)
-- Descrição da abordagem/metodologia
-- Etapas de pagamento (até 3 parcelas com percentual e condição)
-
-#### `/painel/avaliacoes` — Avaliações Recebidas
-
-Lista de avaliações feitas por contratantes. Para cada avaliação:
-
-- Nota (1–5 estrelas), comentário, data
-- Opção de **responder publicamente** à avaliação
-- Status de disputa: ABERTA / RESOLVIDA (se o profissional contestar)
-
-#### `/painel/assinatura` — Assinatura
-
-Gerenciamento do plano de assinatura. Exibe:
-
-- Status atual: TRIAL / ATIVO / CANCELADO / SUSPENSO
-- Dias restantes do trial ou data de renovação
-- Preço: R$79/mês (plano MVP_79)
-- Botão de assinar (redireciona para Stripe Checkout)
-- Histórico de pagamentos
-
-#### `/painel/acessos` — Logs de Acesso
-
-Lista de contratantes que acessaram o perfil do profissional, com tipo de evento (perfil visualizado, contato visualizado) e data.
-
-#### `/painel/configuracoes` — Configurações
-
-Preferências da conta: notificações, privacidade, exclusão de conta.
-
----
+| Rota | O que faz |
+|---|---|
+| `/painel` | Dashboard: status de assinatura, completude do perfil, métricas (views, contatos, nota) |
+| `/painel/perfil` | Editor: foto, bio, especialidades, affinities, canais de contato, redes sociais, cidade/raio |
+| `/painel/portfolio` | Criar/editar projetos com imagens e vídeos; drag-and-drop para reordenar; até 3 projetos em destaque |
+| `/painel/servicos` | Histórico de serviços concluídos com fotos (movíveis para o portfólio) |
+| `/painel/solicitacoes` | Inbox de pedidos de orçamento com status (NOVA/RESPONDIDA/EM NEGOCIAÇÃO/RECUSADA) |
+| `/painel/solicitacoes/[id]/proposta` | Formulário de proposta: valor, prazo, abordagem, até 3 etapas de pagamento |
+| `/painel/avaliacoes` | Lista de avaliações com opção de resposta pública e gestão de disputas |
+| `/painel/assinatura` | Status, histórico de pagamentos, botão de assinar (Mercado Pago) |
+| `/painel/acessos` | Log de visitas: quem visualizou o perfil e quais canais de contato |
+| `/painel/configuracoes` | Notificações, privacidade, exclusão de conta |
 
 ### Área do Contratante
 
-#### `/minha-conta` — Minha Conta
+#### `/minha-conta`
 
-Dashboard do contratante com:
-
-- Histórico de contatos com profissionais (contact_logs)
-- Avaliações que já deu
-- Dados da conta (nome, email, telefone)
+- Histórico de contatos com profissionais
+- Avaliações já enviadas
+- Dados da conta
 
 ---
 
@@ -273,15 +200,16 @@ PENDING → ACTIVE → SUSPENDED → BANNED
 |---|---|
 | `PENDING` | Recém-cadastrado, aguardando validação |
 | `ACTIVE` | Visível na busca e no mapa |
-| `SUSPENDED` | Temporariamente fora do ar (pagamento inadimplente ou infração) |
+| `SUSPENDED` | Fora do ar (pagamento inadimplente ou infração) |
 | `BANNED` | Banido permanentemente |
 
-Somente profissionais com `status=ACTIVE` aparecem nos resultados de busca e no mapa.
+Somente `status=ACTIVE` aparece nos resultados de busca e no mapa.
 
 ### Status da Assinatura
 
 ```
-TRIAL → ACTIVE → CANCELLED / SUSPENDED
+TRIAL → ACTIVE → CANCELLED
+               → SUSPENDED
 ```
 
 | Status | Descrição |
@@ -293,14 +221,14 @@ TRIAL → ACTIVE → CANCELLED / SUSPENDED
 
 ### Avaliações
 
-- Cada par contratante-profissional pode gerar **no máximo uma avaliação** (constraint `UNIQUE` no banco)
-- O contratante só pode avaliar um profissional se houver um `contact_log` registrado para esse par — ou seja, ele precisa ter efetivamente visualizado um canal de contato do profissional
+- Cada par contratante-profissional tem **no máximo uma avaliação** (constraint UNIQUE no banco)
+- Só pode avaliar se houver `contact_log` registrado — contratante precisa ter visualizado um canal de contato
 
 ### Portfólio
 
-- Cada projeto pode ter múltiplas imagens e vídeos
-- **Máximo de 3 projetos em destaque** por profissional (aplicado por trigger/constraint no banco)
-- Toda mídia enviada inicia com status `PENDING` e precisa ser aprovada pela moderação antes de aparecer publicamente
+- Cada projeto suporta múltiplas imagens e vídeos (Cloudinary)
+- **Máximo 3 projetos em destaque** por profissional (aplicado por constraint no banco)
+- Toda mídia inicia `PENDING` e precisa ser aprovada por moderação antes de aparecer publicamente
 
 ### Moderação de Conteúdo
 
@@ -309,147 +237,100 @@ PENDING → APPROVED
          → REJECTED
 ```
 
-Mídia rejeitada gera uma **infração** no profissional. Infrações acumuladas podem levar a:
+Mídia rejeitada gera infração. Infrações acumuladas:
 
-| Infração | Tipo | Consequência |
-|---|---|---|
-| Conteúdo rejeitado | `CONTENT_REJECTION` | Revisão manual obrigatória |
-| Plágio detectado | `PLAGIARISM` | Suspensão |
-| Fraude identificada | `FRAUD` | Banimento |
-
-### Validação de Documentos
-
-CPF e CNPJ são validados em duas etapas:
-1. **Pré-validação local**: checksum algorítmico (Receita Federal rules)
-2. **Validação SERPRO**: consulta à API da Receita Federal em tempo real, com cache de 24h no banco
-
-O resultado é armazenado em `cpf_validations` com o payload completo da resposta do SERPRO.
-
-### Geolocalização no Mapa
-
-O mapa da home exibe todos os profissionais com `status=ACTIVE` que têm cidade e estado cadastrados. A resposta é cacheada por 5 minutos (Cache-Control: `public, max-age=300, stale-while-revalidate=60`).
-
----
-
-## Monetização
-
-O modelo de monetização é **SaaS B2B de assinatura**, cobrado exclusivamente dos profissionais. Contratantes usam a plataforma gratuitamente.
-
-| Item | Valor |
+| Tipo | Consequência |
 |---|---|
-| Plano único (`MVP_79`) | R$79/mês |
-| Trial gratuito | 30 dias |
-| Cobrança | Recorrente via Stripe |
+| `CONTENT_REJECTION` | Revisão manual obrigatória |
+| `PLAGIARISM` | Suspensão |
+| `FRAUD` | Banimento |
 
-### Fluxo de Pagamento
+### Validação de Documentos (CPF/CNPJ)
 
-1. Profissional clica em "Assinar" no `/painel/assinatura`
-2. Redirecionado para **Stripe Checkout**
-3. Ao concluir o pagamento, Stripe dispara webhook `checkout.session.completed`
-4. Handler em `/api/stripe/webhook` atualiza `subscription_status=ACTIVE` e `subscription_paid_until`
-5. Renovações mensais: webhook `invoice.payment_succeeded` renova o período
-6. Falha no pagamento: webhook `invoice.payment_failed` suspende o perfil
-7. Cancelamento: webhook `customer.subscription.deleted` marca como `CANCELLED`
+1. **Pré-validação local** — checksum algorítmico (regras da Receita Federal)
+2. **Validação SERPRO** — consulta à API da Receita Federal; resultado cacheado 24h em `cpf_validations`
 
-### Tabelas de Controle
+### Geolocalização
 
-- **`professional_subscriptions`**: histórico de assinaturas com IDs do Stripe
-- **`payment_transactions`**: registro de cada transação (valor, status, IDs do Stripe)
+O mapa exibe profissionais com `status=ACTIVE` que têm cidade/estado cadastrados. Resposta cacheada 5 minutos (`public, max-age=300, stale-while-revalidate=60`).
 
 ---
 
 ## Banco de Dados
 
-25 tabelas PostgreSQL no Supabase, todas com **Row Level Security (RLS)** habilitada.
+25 tabelas PostgreSQL no Supabase, todas com Row Level Security (RLS) habilitada.
 
 ### Tabelas Principais
 
 | Tabela | Descrição |
 |---|---|
-| `profiles` | Espelho dos usuários do Supabase Auth (id, email, nome, telefone, role) |
+| `profiles` | Espelho dos usuários do Supabase Auth |
 | `contractor_profiles` | Dados específicos do contratante |
 | `professional_profiles` | Dados do profissional (slug, CPF/CNPJ, foto, bio, cidade, status, assinatura) |
-| `professional_specialties` | Categorias de serviço do profissional |
-| `professional_affinities` | Tags livres do profissional |
-| `professional_contact_channels` | Canais de contato (WhatsApp, Telefone, Email, etc.) |
-| `professional_social_networks` | Redes sociais |
+| `professional_specialties` | Categorias de serviço |
+| `professional_affinities` | Tags livres |
+| `professional_contact_channels` | WhatsApp, Telefone, Email, Instagram, Facebook, Site |
+| `professional_social_networks` | Handles de redes sociais |
 | `portfolio_projects` | Projetos do portfólio |
-| `portfolio_images` | Imagens dos projetos (Cloudinary) com status de moderação |
-| `portfolio_videos` | Vídeos dos projetos (Cloudinary) com status de moderação |
-| `budget_requests` | Solicitações de orçamento de contratantes |
-| `proposals` | Propostas dos profissionais em resposta a orçamentos |
+| `portfolio_images` | Imagens com moderação (Cloudinary) |
+| `portfolio_videos` | Vídeos com moderação (Cloudinary) |
+| `contact_logs` | Registro de visualizações de canais de contato (gatekeeper de avaliações) |
+| `budget_requests` | Solicitações de orçamento |
+| `proposals` | Propostas em resposta a orçamentos |
 | `completed_services` | Histórico de serviços realizados |
 | `service_photos` | Fotos de serviços concluídos |
 | `evaluations` | Avaliações (nota 1–5, comentário, disputa) |
-| `evaluation_photos` | Fotos de evidência em avaliações |
-| `evaluation_responses` | Respostas do profissional às avaliações |
+| `evaluation_photos` | Fotos de evidência em disputas |
+| `evaluation_responses` | Respostas públicas do profissional a avaliações |
 | `professional_metrics` | Cache de métricas (views, contatos, nota média) |
-| `verification_badges` | Badges de confiança (VERIFIED, TRUSTWORTHY, CERTIFIED) |
-| `professional_subscriptions` | Assinaturas Stripe dos profissionais |
-| `payment_transactions` | Transações financeiras |
-| `cpf_validations` | Histórico de validações de documentos via SERPRO |
-| `content_reports` | Denúncias de conteúdo inadequado |
-| `professional_infractions` | Infrações cometidas por profissionais |
-| `contact_logs` | Log de quando um contratante visualizou um canal de contato |
-| `profile_activity_logs` | Log de acessos ao perfil |
+| `verification_badges` | Badges VERIFIED, TRUSTWORTHY, CERTIFIED |
+| `professional_subscriptions` | Histórico de assinaturas (Mercado Pago) |
+| `payment_transactions` | Transações financeiras individuais |
+| `cpf_validations` | Cache de validações SERPRO |
+| `content_reports` | Denúncias de conteúdo |
+| `professional_infractions` | Registro de infrações acumuladas |
 
 ### Políticas RLS Principais
 
-- Perfis de profissionais com `status=ACTIVE`: leitura pública
-- Portfólio aprovado: leitura pública
+- Perfis `ACTIVE`: leitura pública
+- Portfólio `APPROVED`: leitura pública
 - Canais de contato: visíveis para usuários autenticados
-- Dados sensíveis (assinatura, métricas, logs): visíveis apenas para o próprio usuário
-- Avaliações: somente contratantes que contataram o profissional podem inserir
+- Dados sensíveis (assinatura, métricas, logs): apenas o próprio usuário
+- Avaliações: somente contratantes com `contact_log` registrado podem inserir
 
 ### Storage Buckets
 
 | Bucket | Uso | Acesso |
 |---|---|---|
-| `profiles` | Fotos de perfil dos profissionais | Leitura pública, escrita pelo dono |
-| `portfolio` | Imagens e vídeos de portfólio | Leitura pública, escrita pelo dono |
+| `profiles/` | Fotos de perfil | Leitura pública, escrita pelo dono |
+| `portfolio/` | Imagens e vídeos de portfólio | Leitura pública, escrita pelo dono |
 
 ---
 
 ## APIs Externas
 
-### SERPRO (Receita Federal)
-- **Endpoint**: validação de CPF (`/api/serpro/validate`) e CNPJ
-- **Fluxo**: pré-validação local por checksum → consulta SERPRO → cache de 24h em `cpf_validations`
-- **Dados retornados**: nome da pessoa, status da situação cadastral, mensagem
+| Serviço | Uso | Rota interna |
+|---|---|---|
+| **SERPRO** | Validação de CPF/CNPJ via Receita Federal | `/api/serpro/validate`, `/api/serpro/precheck` |
+| **IBGE** | Autocomplete de cidades brasileiras | Consumido direto no componente `CityInput` |
+| **BigDataCloud** | Geocodificação reversa (lat/lon → cidade, estado) | `/api/geocode` |
+| **Mercado Pago** | Assinaturas recorrentes via PreApproval | `/api/mercadopago/checkout`, `/api/mercadopago/setup-plan` |
+| **Cloudinary** | Upload, armazenamento e CDN de imagens/vídeos | `/api/upload` |
+| **Resend** | Emails transacionais (boas-vindas, notificações) | `/api/emails` |
+| **PostHog** | Analytics de comportamento (page views, eventos, conversão) | Client + server SDKs |
 
-### IBGE
-- **Uso**: autocomplete de cidades brasileiras no componente `CityInput`
-- **Endpoint público**: `servicodados.ibge.gov.br`
+### Fluxo de Pagamento (Mercado Pago)
 
-### BigDataCloud
-- **Uso**: geocodificação reversa (latitude/longitude → cidade e estado)
-- **Endpoint**: `/api/geocode?lat=X&lon=Y`
-- **Retorna**: cidade e sigla do estado (ex.: "São Paulo", "SP")
-
-### Stripe
-- **Uso**: checkout de assinatura, gestão de faturas e webhooks
-- **Eventos tratados**:
-  - `checkout.session.completed`
-  - `invoice.payment_succeeded`
-  - `invoice.payment_failed`
-  - `customer.subscription.deleted`
-
-### Cloudinary
-- **Uso**: upload, armazenamento e CDN de imagens e vídeos do portfólio e perfil
-- **Fluxo**: client faz POST em `/api/upload`, que envia para Cloudinary e retorna a URL pública
-
-### Resend
-- **Uso**: emails transacionais (boas-vindas, notificações, propostas)
-- **Endpoint interno**: `/api/emails`
-
-### PostHog
-- **Uso**: analytics de comportamento de usuário (page views, eventos de contato, conversão)
+1. Profissional clica em "Assinar" no `/painel/assinatura`
+2. POST para `/api/mercadopago/checkout` cria PreApproval e retorna `init_point`
+3. Usuário é redirecionado ao checkout do Mercado Pago
+4. **Webhooks** (a implementar): `payment.approved` → `ACTIVE`, `payment.rejected` → `SUSPENDED`, `preapproval.cancelled` → `CANCELLED`
 
 ---
 
 ## Variáveis de Ambiente
 
-Crie um arquivo `.env.local` na raiz com as seguintes variáveis:
+Crie `.env.local` na raiz:
 
 ```env
 # Supabase
@@ -457,29 +338,31 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
-# Stripe
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+# Mercado Pago
+MP_ACCESS_TOKEN=
+MP_PLAN_ID=
 
-# Cloudinary
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+# URLs da aplicação
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_MAIN_URL=https://meuprumo.com.br
 
-# Resend
+# Email (Resend)
 RESEND_API_KEY=
+RESEND_FROM_EMAIL=no-reply@prumo.com.br
 
-# SERPRO
+# Validação de documentos (SERPRO)
 SERPRO_API_KEY=
 SERPRO_BASE_URL=
 
-# PostHog
+# Analytics (PostHog)
 NEXT_PUBLIC_POSTHOG_KEY=
 NEXT_PUBLIC_POSTHOG_HOST=
 
-# BigDataCloud
+# Geocodificação (BigDataCloud)
 BIGDATACLOUD_API_KEY=
+
+# Admin
+SETUP_SECRET=
 ```
 
 ---
@@ -495,40 +378,56 @@ cp .env.example .env.local
 # Preencher as variáveis acima
 
 # 3. Aplicar schema no Supabase
-# Execute o conteúdo de supabase/schema.sql no Supabase SQL Editor
+# Execute supabase/schema.sql no Supabase SQL Editor
 
 # 4. Iniciar o servidor de desenvolvimento
 npm run dev
 ```
 
-A aplicação estará disponível em [http://localhost:3000](http://localhost:3000).
+Acesse [http://localhost:3000](http://localhost:3000).
 
-### Estrutura de URLs
-
-| URL | Ambiente |
+| URL | Contexto |
 |---|---|
 | `localhost:3000` | Área pública + cadastro de contratantes |
 | `localhost:3000/painel` | Painel do profissional |
-| `app.prumo.com.br` | Domínio de produção do painel profissional |
+| `localhost:3000/admin` | Painel administrativo |
 
 ---
 
 ## Categorias de Serviço
 
-A plataforma suporta 13 categorias:
+A plataforma suporta 5 grandes categorias com mais de 50 serviços específicos:
 
-| Categoria | Exemplos de serviço |
-|---|---|
-| Construção | Alvenaria, fundação, estrutura |
-| Elétrica | Instalações elétricas, SPDA |
-| Hidráulica | Encanamento, esgoto, cisternas |
-| Acabamento | Pintura, gesso, drywall |
-| Pisos | Porcelanato, madeira, epóxi |
-| Serralheria | Grades, portões, escadas metálicas |
-| Marcenaria | Móveis planejados, esquadrias |
-| Jardinagem | Paisagismo, irrigação |
-| Limpeza | Pós-obra, fachadas |
-| Projeto | Arquitetura, design de interiores |
-| Engenharia | Cálculo estrutural, laudos |
-| Tecnologia | Automação residencial, CFTV |
-| Climatização | Ar-condicionado, ventilação |
+### Casa e Construção
+
+**Obras e Reformas:** pedreiro, pintor, eletricista, encanador, gesseiro, azulejista, marceneiro, serralheiro, vidraceiro, telhadista, impermeabilização, drywall, pisos
+
+**Projetos:** arquitetura, design de interiores, engenharia civil
+
+### Reparos e Manutenção
+
+**Instalações:** montagem de móveis, TV, antena, automação residencial
+
+**Assistência Técnica:** eletrodomésticos, ar-condicionado, computadores, celulares
+
+### Tecnologia e Desenvolvimento
+
+**Desenvolvimento:** sites, sistemas web, apps mobile, e-commerce, SaaS
+
+**Automação e IA:** chatbots, n8n, integrações, agentes de IA
+
+**Infraestrutura:** bancos de dados, cloud, DevOps
+
+### Design e Criatividade
+
+**Design Gráfico:** logos, identidade visual, publicidade
+
+**UX/UI:** design de interfaces, prototipação
+
+**Audiovisual:** edição de vídeos, motion design, modelagem 3D
+
+### Marketing e Vendas
+
+**Marketing Digital:** redes sociais, tráfego pago, SEO, copywriting, email marketing
+
+**Vendas:** SDR, consultoria comercial
