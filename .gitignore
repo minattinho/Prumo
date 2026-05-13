@@ -44,3 +44,6 @@ next-env.d.ts
 __pycache__/
 ai/scripts/__pycache__/
 .env*.local
+
+# private brand documentation
+.prumo-brand/

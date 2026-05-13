@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Star, Camera } from "lucide-react";
 import type { BadgeType } from "@/types";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 
 interface Professional {
   id: string;
@@ -58,10 +59,9 @@ export function ProfessionalCard({ professional }: { professional: Professional 
       {/* Header: Avatar + Info + Badge */}
       <div className="p-4 flex items-start gap-3">
         {/* Avatar */}
-        <div className="w-12 h-12 rounded-full shrink-0 overflow-hidden bg-azul-claro flex items-center justify-center">
+        <div className="relative w-12 h-12 rounded-full shrink-0 overflow-hidden bg-azul-claro flex items-center justify-center">
           {photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
+            <ResponsiveImage src={photoUrl} alt={`Foto de perfil de ${name}`} fill sizes="48px" className="object-cover" />
           ) : (
             <span className="text-azul-principal font-semibold text-sm">{initials}</span>
           )}
@@ -109,13 +109,16 @@ export function ProfessionalCard({ professional }: { professional: Professional 
         {[0, 1, 2].map((i) => {
           const img = portfolioImages[i];
           return img ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={i}
-              src={img}
-              alt=""
-              className="aspect-square w-full object-cover"
-            />
+            <div key={i} className="relative aspect-square w-full overflow-hidden">
+              <ResponsiveImage
+                src={img}
+                alt={`Foto de portfólio de ${name}`}
+                fill
+                sizes="(min-width: 1280px) 100px, (min-width: 640px) 33vw, 33vw"
+                className="object-cover"
+                loading="lazy"
+              />
+            </div>
           ) : (
             <div
               key={i}

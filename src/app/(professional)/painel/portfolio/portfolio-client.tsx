@@ -38,6 +38,7 @@ import {
   addProjectImage,
 } from "./actions";
 import { SERVICE_TAXONOMY, getServiceLabel } from "@/types/services";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 
 const LEGACY_CATEGORIES = [
   "Construção",
@@ -137,11 +138,13 @@ function SortableProjectCard({
       {/* Cover */}
       <div className="relative aspect-video bg-azul-claro overflow-hidden">
         {coverImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <ResponsiveImage
             src={coverImage}
-            alt={project.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            alt={`Capa do projeto ${project.title}`}
+            fill
+            sizes="(min-width: 768px) 33vw, 50vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -437,8 +440,14 @@ function ProjectModal({
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     {images.map((url, i) => (
                       <div key={i} className="relative aspect-square rounded-lg overflow-hidden group">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <ResponsiveImage
+                          src={url}
+                          alt={`Prévia da foto ${i + 1} do projeto`}
+                          fill
+                          sizes="96px"
+                          className="object-cover"
+                          loading="lazy"
+                        />
                         <button
                           type="button"
                           onClick={() => setImages((prev) => prev.filter((_, idx) => idx !== i))}

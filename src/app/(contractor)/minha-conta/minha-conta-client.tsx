@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { getServiceLabel } from "@/types/services";
 import { formatDate } from "@/lib/utils";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 import {
   updateContractorProfile,
   submitEvaluation,
@@ -96,12 +97,15 @@ function ProfessionalAvatar({ pro }: { pro: Professional | null }) {
 
   if (pro?.photo_url) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0">
+        <ResponsiveImage
         src={pro.photo_url}
-        alt={name}
-        className="w-10 h-10 rounded-full object-cover shrink-0"
-      />
+        alt={`Foto de perfil de ${name}`}
+        fill
+        sizes="40px"
+        className="object-cover"
+        />
+      </div>
     );
   }
   return (

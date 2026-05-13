@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { HeroSearch } from "./hero-search";
 import { HeroMapWrapper } from "./hero-map-wrapper";
+import { FAQ } from "@/components/FAQ";
+import { SocialProof } from "@/components/SocialProof";
 import {
   Search,
   Star,
@@ -168,6 +170,29 @@ export default function HomePage() {
               </p>
 
               <HeroSearch />
+
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto lg:mx-0">
+                <Link
+                  href="/profissionais"
+                  className="group rounded-2xl bg-azul-principal hover:bg-blue-700 border border-white/10 px-5 py-4 text-left transition-colors shadow-lg shadow-black/20"
+                >
+                  <span className="text-xs font-semibold text-blue-100">Contratantes</span>
+                  <span className="mt-1 flex items-center justify-between gap-3 text-white font-bold">
+                    Buscar Profissional Agora
+                    <ArrowRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                  </span>
+                </Link>
+                <Link
+                  href="/seja-profissional"
+                  className="group rounded-2xl bg-laranja-obra hover:bg-orange-600 border border-white/10 px-5 py-4 text-left transition-colors shadow-lg shadow-black/20"
+                >
+                  <span className="text-xs font-semibold text-orange-100">Profissionais</span>
+                  <span className="mt-1 flex items-center justify-between gap-3 text-white font-bold">
+                    Criar Perfil Grátis
+                    <ArrowRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
+                  </span>
+                </Link>
+              </div>
             </div>
 
             {/* Coluna direita: mapa — apenas lg+ */}
@@ -196,6 +221,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <SocialProof />
+      <FAQ />
 
       {/* ─── CATEGORIAS ───────────────────────────────────────── */}
       <section className="py-16 sm:py-20 px-4 bg-[#F8FAFC]">

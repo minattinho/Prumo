@@ -35,8 +35,12 @@ export function HeroSearch() {
       {/* Search bar */}
       <div className="bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto shadow-2xl shadow-black/30 mb-6">
         <div className="flex-1 flex items-center gap-3 px-4 py-1">
+          <label htmlFor="hero-service-search" className="sr-only">
+            Qual serviço você precisa?
+          </label>
           <Search size={18} className="text-gray-400 shrink-0" />
           <input
+            id="hero-service-search"
             type="text"
             placeholder="Qual serviço você precisa?"
             value={servico}
@@ -47,11 +51,15 @@ export function HeroSearch() {
         </div>
         <div className="hidden sm:block w-px bg-gray-200 my-2" />
         <CityInput
+          id="hero-city-search"
           value={cidade}
           onChange={setCidade}
           className="px-4 py-1 sm:w-52"
           inputClassName="flex-1 min-w-0 text-azul-noite text-sm outline-none focus-visible:outline-none placeholder:text-gray-400 bg-transparent"
         />
+        <label htmlFor="hero-city-search" className="sr-only">
+          Cidade
+        </label>
         <button
           onClick={handleBuscar}
           className="bg-laranja-obra hover:bg-orange-600 text-white font-semibold px-7 py-3 rounded-xl text-sm transition-colors duration-200 text-center cursor-pointer"

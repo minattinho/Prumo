@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/layout/logo";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 
 interface SidebarProps {
   profile: { full_name: string | null };
@@ -100,12 +101,15 @@ export function Sidebar({ profile, professionalProfile }: SidebarProps) {
       <div className="px-4 py-4 border-b border-gray-100">
         <div className="flex items-center gap-3">
           {professionalProfile?.photo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={professionalProfile.photo_url}
-              alt={profile.full_name ?? ""}
-              className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-azul-claro"
-            />
+            <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 ring-2 ring-azul-claro">
+              <ResponsiveImage
+                src={professionalProfile.photo_url}
+                alt={`Foto de perfil de ${profile.full_name ?? "profissional"}`}
+                fill
+                sizes="40px"
+                className="object-cover"
+              />
+            </div>
           ) : (
             <div className="w-10 h-10 rounded-full bg-azul-principal flex items-center justify-center text-white text-sm font-bold shrink-0">
               {getInitials(profile.full_name)}

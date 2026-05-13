@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import { CityInput } from "@/components/city-input";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { SERVICE_TAXONOMY, getServiceLabel } from "@/types/services";
 import {
   Camera,
@@ -199,8 +200,13 @@ function IdentidadeTab({ profile, fullName }: { profile: ProfileData; fullName: 
             className="relative w-20 h-20 rounded-full overflow-hidden group cursor-pointer shrink-0"
           >
             {photoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={photoUrl} alt="Foto" className="w-full h-full object-cover" />
+              <ResponsiveImage
+                src={photoUrl}
+                alt={`Foto de perfil de ${fullName ?? "profissional"}`}
+                fill
+                sizes="80px"
+                className="object-cover"
+              />
             ) : (
               <div className="w-full h-full bg-azul-claro text-azul-principal flex items-center justify-center text-xl font-bold">
                 {initials}
@@ -433,7 +439,7 @@ function EspecialidadesTab({
       <div className="bg-white rounded-card shadow-card p-5 space-y-4">
         <h3 className="text-sm font-semibold text-azul-noite">Afinidades</h3>
         <p className="text-xs text-cinza-texto -mt-2">
-          Palavras-chave que descrevem seu trabalho (ex: "reforma completa", "atendimento rápido").
+          Palavras-chave que descrevem seu trabalho (ex: reforma completa, atendimento rápido).
         </p>
 
         <div className="flex flex-wrap gap-2">

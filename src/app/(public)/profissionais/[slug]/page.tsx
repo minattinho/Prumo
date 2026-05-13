@@ -3,6 +3,7 @@ import { MapPin, Star, ShieldCheck, ExternalLink, ChevronRight, Lock } from "luc
 import { createClient } from "@/lib/supabase/server";
 import { ContactButton } from "./contact-button";
 import { getServiceLabel } from "@/types/services";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -165,10 +166,9 @@ export default async function ProfissionalProfilePage({ params }: Props) {
             <div className="bg-white rounded-card shadow-card p-6">
               <div className="flex gap-4 items-start">
                 {/* Avatar */}
-                <div className="w-20 h-20 rounded-full shrink-0 overflow-hidden bg-azul-claro flex items-center justify-center">
+                <div className="relative w-20 h-20 rounded-full shrink-0 overflow-hidden bg-azul-claro flex items-center justify-center">
                   {pro.photo_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={pro.photo_url} alt={name} className="w-full h-full object-cover" />
+                    <ResponsiveImage src={pro.photo_url} alt={`Foto de perfil de ${name}`} fill sizes="80px" className="object-cover" priority />
                   ) : (
                     <span className="text-azul-principal font-bold text-2xl">{initials}</span>
                   )}
@@ -275,8 +275,14 @@ export default async function ProfissionalProfilePage({ params }: Props) {
                                 className={`relative overflow-hidden bg-linear-to-br from-azul-claro to-blue-100 ${i === 0 ? "col-span-2 row-span-2" : ""}`}
                                 style={i === 0 ? { gridRow: "span 2" } : {}}
                               >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={img.cloudinary_url} alt="" className="w-full h-full object-cover" />
+                                <ResponsiveImage
+                                  src={img.cloudinary_url}
+                                  alt={`Foto do projeto ${project.title}`}
+                                  fill
+                                  sizes={i === 0 ? "(min-width: 1024px) 384px, 50vw" : "(min-width: 1024px) 192px, 25vw"}
+                                  className="object-cover"
+                                  loading="lazy"
+                                />
                                 {i === 3 && images.length > 4 && (
                                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                                     <span className="text-white text-sm font-medium">+{images.length - 4}</span>

@@ -220,7 +220,6 @@ export default function HeroMap() {
         .slice(0, 30);
 
       const toGeocode = sorted.map(([key]) => {
-        const [city, state] = key.split(",");
         return {
           city: sorted.find(([k]) => k === key)![1][0].city,
           state: sorted.find(([k]) => k === key)![1][0].state,
@@ -262,9 +261,9 @@ export default function HeroMap() {
 
   if (loadingState === "loading") {
     return (
-      <div className="absolute inset-0 bg-white/5 animate-pulse flex flex-col items-center justify-center gap-2">
-        <MapPin size={28} className="text-blue-400/50" />
-        <span className="text-blue-300/60 text-sm">Carregando mapa...</span>
+      <div className="absolute inset-0 bg-gray-100 animate-pulse flex flex-col items-center justify-center gap-2">
+        <MapPin size={28} className="text-gray-300" />
+        <span className="text-gray-400 text-sm">Carregando mapa...</span>
       </div>
     );
   }
@@ -281,6 +280,15 @@ export default function HeroMap() {
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+        eventHandlers={{
+          tileload: (event) => {
+            const tile = (event as { tile?: HTMLImageElement }).tile;
+            if (tile) {
+              tile.alt = "";
+              tile.setAttribute("aria-hidden", "true");
+            }
+          },
+        }}
       />
 
       {/* User location marker */}

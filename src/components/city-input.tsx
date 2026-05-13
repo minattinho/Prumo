@@ -8,6 +8,7 @@ import { getMunicipios, searchMunicipios, type Municipio } from "@/lib/ibge";
 type GeoState = "idle" | "loading" | "error";
 
 interface CityInputProps {
+  id?: string;
   value: string;
   onChange: (city: string) => void;
   onCityStateChange?: (location: { city: string; state: string }) => void;
@@ -26,6 +27,7 @@ async function fetchLocationFromCoords(
 }
 
 export function CityInput({
+  id,
   value,
   onChange,
   onCityStateChange,
@@ -236,6 +238,7 @@ export function CityInput({
       <div className="flex items-center gap-2 w-full min-w-0">
         <MapPin size={16} className="text-gray-400 shrink-0" />
         <input
+          id={id}
           ref={inputRef}
           type="text"
           placeholder={placeholder}
