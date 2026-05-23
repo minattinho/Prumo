@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
-import { MapPin, Star, ShieldCheck, ExternalLink, ChevronRight, Lock } from "lucide-react";
+import { MapPin, Star, ShieldCheck, ExternalLink, ChevronRight, Lock, BadgeDollarSign } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ContactButton } from "./contact-button";
+import type { ProfessionalPricing } from "@/types";
 import { getServiceLabel } from "@/types/services";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import { BudgetRequestModal } from "./budget-request-modal";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -36,6 +38,24 @@ const BADGE_LABELS: Record<string, { label: string; color: string }> = {
   CERTIFIED: { label: "Certificado", color: "bg-purple-100 text-purple-700" },
 };
 
+const PRICE_LABELS: Array<{ key: "price_per_hour" | "price_per_day" | "price_per_month" | "price_per_service"; label: string }> = [
+  { key: "price_per_hour", label: "Por hora" },
+  { key: "price_per_day", label: "Por dia" },
+  { key: "price_per_month", label: "Por mês" },
+  { key: "price_per_service", label: "Por serviço" },
+];
+
+function formatPrice(value: number | string | null, currency: string | null) {
+  if (value === null) return null;
+  const numericValue = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(numericValue)) return null;
+
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: currency || "BRL",
+  }).format(numericValue);
+}
+
 export default async function ProfissionalProfilePage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createClient();
@@ -43,12 +63,17 @@ export default async function ProfissionalProfilePage({ params }: Props) {
   // 1. Perfil profissional (RLS filtra status=ACTIVE para visitantes)
   const { data: pro } = await supabase
     .from("professional_profiles")
-    .select("id, user_id, slug, photo_url, personal_description, city, state, service_radius_km")
+    .select("id, user_id, slug, photo_url, personal_description, city, state, service_radius_km, price_per_hour, price_per_day, price_per_month, price_per_service, price_currency")
     .eq("slug", slug)
-    .single() as { data: {
+    .single() as { data: Omit<ProfessionalPricing, "price_per_hour" | "price_per_day" | "price_per_month" | "price_per_service"> & {
       id: string; user_id: string; slug: string; photo_url: string | null;
       personal_description: string | null; city: string | null; state: string | null;
       service_radius_km: number | null;
+      price_per_hour: number | string | null;
+      price_per_day: number | string | null;
+      price_per_month: number | string | null;
+      price_per_service: number | string | null;
+      price_currency: string | null;
     } | null };
 
   if (!pro) notFound();
@@ -63,6 +88,16 @@ export default async function ProfissionalProfilePage({ params }: Props) {
   // 3. Auth check (server-side)
   const { data: { user } } = await supabase.auth.getUser();
   const isAuthenticated = !!user;
+
+  let isContractor = false;
+  if (user) {
+    const { data: userProfile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isContractor = userProfile?.role === "contractor";
+  }
 
   // 4. Dados públicos em paralelo
   const [
@@ -153,6 +188,10 @@ export default async function ProfissionalProfilePage({ params }: Props) {
 
   const primaryChannel = channels.find((c) => c.is_primary) ?? channels[0] ?? null;
   const secondaryChannels = channels.filter((c) => c !== primaryChannel && ["WHATSAPP", "PHONE", "EMAIL"].includes(c.type));
+  const prices = PRICE_LABELS.map(({ key, label }) => ({
+    label,
+    value: formatPrice(pro[key], pro.price_currency),
+  })).filter((price) => price.value);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -381,6 +420,33 @@ export default async function ProfissionalProfilePage({ params }: Props) {
 
           {/* Coluna lateral — Contato */}
           <div className="space-y-4">
+            <div className="bg-white rounded-card shadow-card p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <BadgeDollarSign size={18} className="text-azul-principal" />
+                <p className="text-xs font-semibold uppercase tracking-wider text-cinza-texto">
+                  Valores de referência
+                </p>
+              </div>
+              {prices.length > 0 ? (
+                <div className="divide-y divide-gray-100">
+                  {prices.map((price) => (
+                    <div key={price.label} className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0">
+                      <span className="text-sm text-cinza-texto">{price.label}</span>
+                      <span className="text-sm font-semibold text-azul-noite">{price.value}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="pt-1">
+                  <p className="text-sm font-semibold text-azul-noite mb-1">
+                    Preço sob consulta
+                  </p>
+                  <p className="text-xs text-cinza-texto leading-relaxed">
+                    Este profissional prefere combinar os valores diretamente após entender os detalhes do serviço.
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Card contato */}
             <div className="bg-white rounded-card shadow-card p-5 sticky top-24">
@@ -390,6 +456,13 @@ export default async function ProfissionalProfilePage({ params }: Props) {
 
               {isAuthenticated ? (
                 <>
+                  {isContractor && (
+                    <BudgetRequestModal
+                      professionalId={pro.id}
+                      professionalName={name}
+                    />
+                  )}
+
                   {primaryChannel ? (
                     <>
                       <ContactButton

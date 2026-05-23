@@ -33,7 +33,7 @@ export function HeroSearch() {
   return (
     <>
       {/* Search bar */}
-      <div className="bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto shadow-2xl shadow-black/30 mb-6">
+      <div className="bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2 max-w-2xl shadow-2xl shadow-black/30 mb-6">
         <div className="flex-1 flex items-center gap-3 px-4 py-1">
           <label htmlFor="hero-service-search" className="sr-only">
             Qual serviço você precisa?
@@ -69,7 +69,7 @@ export function HeroSearch() {
       </div>
 
       {/* Popular searches */}
-      <div className="flex flex-wrap justify-center gap-2 text-sm">
+      <div className="flex flex-wrap gap-2 text-sm">
         <span className="text-blue-400 text-xs mt-0.5">Buscas populares:</span>
         {POPULAR_SEARCHES.map((term) => (
           <Link

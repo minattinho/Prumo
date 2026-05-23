@@ -219,8 +219,18 @@ export default async function PainelPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs font-medium text-cinza-texto uppercase tracking-widest mb-1">Painel profissional</p>
-          <h1 className="text-2xl font-bold text-azul-noite">Olá, {firstName}!</h1>
+          <p
+            className="text-xs font-bold text-cinza-texto uppercase tracking-[0.12em] mb-1"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Painel profissional
+          </p>
+          <h1
+            className="text-2xl font-bold text-azul-noite"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Olá, {firstName}!
+          </h1>
           <p className="text-sm text-cinza-texto mt-1">
             {profileComplete
               ? "Seu perfil está completo e aparece nas buscas."

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ShieldCheck, Banknote, Target } from "lucide-react";
 import type { Metadata } from "next";
 
+const displayStyle: React.CSSProperties = { fontFamily: "var(--font-display)" };
+
 export const metadata: Metadata = {
   title: "Sobre o Prumo",
   description:
@@ -33,12 +35,27 @@ export default function SobrePage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-azul-noite text-white py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-laranja-obra text-sm font-semibold uppercase tracking-widest mb-4">
+      <section className="bg-azul-noite text-white py-20 px-6 relative overflow-hidden">
+        {/* Linhas sutis de blueprint em SVG no fundo */}
+        <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{
+          backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }} />
+        
+        {/* Efeitos de iluminação modernos no fundo */}
+        <div className="absolute top-1/4 -right-20 w-80 h-80 rounded-full bg-azul-principal opacity-[0.10] filter blur-3xl pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto relative z-10">
+          <p
+            className="text-xs font-bold uppercase tracking-[0.12em] text-laranja-obra mb-3"
+            style={displayStyle}
+          >
             Empresa
           </p>
-          <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-6">
+          <h1
+            className="text-4xl sm:text-5xl font-extrabold leading-[1.02] tracking-tight mb-6"
+            style={displayStyle}
+          >
             Sobre o Prumo
           </h1>
           <p className="text-white/60 text-lg leading-relaxed max-w-2xl">
@@ -51,7 +68,7 @@ export default function SobrePage() {
       {/* Missão */}
       <section className="py-16 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-azul-noite mb-4">
+          <h2 className="text-2xl font-extrabold text-azul-noite mb-4" style={displayStyle}>
             Nossa missão
           </h2>
           <p className="text-cinza-texto leading-relaxed text-base mb-4">
@@ -72,7 +89,7 @@ export default function SobrePage() {
       {/* Como surgiu */}
       <section className="py-16 px-6 bg-azul-claro">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-azul-noite mb-4">
+          <h2 className="text-2xl font-extrabold text-azul-noite mb-4" style={displayStyle}>
             Como surgiu o Prumo
           </h2>
           <p className="text-cinza-texto leading-relaxed text-base mb-4">
@@ -92,7 +109,7 @@ export default function SobrePage() {
       {/* Valores */}
       <section className="py-16 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-azul-noite mb-10">
+          <h2 className="text-2xl font-extrabold text-azul-noite mb-10" style={displayStyle}>
             Nossos valores
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
@@ -104,7 +121,7 @@ export default function SobrePage() {
                 <div className="w-10 h-10 rounded-lg bg-azul-claro flex items-center justify-center">
                   <v.icon className="w-5 h-5 text-azul-principal" />
                 </div>
-                <h3 className="font-semibold text-azul-noite">{v.title}</h3>
+                <h3 className="font-semibold text-azul-noite" style={displayStyle}>{v.title}</h3>
                 <p className="text-cinza-texto text-sm leading-relaxed">
                   {v.description}
                 </p>
@@ -115,10 +132,16 @@ export default function SobrePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 px-6 bg-azul-noite text-white">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+      <section className="py-16 px-6 bg-azul-noite text-white relative overflow-hidden">
+        {/* Linhas sutis de blueprint em SVG no fundo */}
+        <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{
+          backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }} />
+        
+        <div className="max-w-4xl mx-auto relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Faça parte do Prumo</h2>
+            <h2 className="text-2xl font-extrabold mb-2" style={displayStyle}>Faça parte do Prumo</h2>
             <p className="text-white/55 text-sm">
               Seja como contratante ou como profissional.
             </p>

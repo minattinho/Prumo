@@ -35,7 +35,12 @@ export default async function AdminDashboardPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-azul-noite">Painel Admin</h1>
+        <h1
+          className="text-2xl font-extrabold text-azul-noite tracking-tight"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Painel Admin
+        </h1>
         <p className="text-sm text-cinza-texto mt-1">Visão geral da plataforma Prumo</p>
       </div>
 
@@ -54,7 +59,12 @@ export default async function AdminDashboardPage() {
 
       {/* Quick actions */}
       <div className="bg-white rounded-2xl border border-gray-100 p-6 max-w-lg">
-        <h2 className="text-sm font-semibold text-azul-noite mb-4">Ações rápidas</h2>
+        <h2
+          className="text-sm font-semibold text-azul-noite mb-4"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Ações rápidas
+        </h2>
         <div className="space-y-2">
           <Link
             href="/admin/criar-usuario"

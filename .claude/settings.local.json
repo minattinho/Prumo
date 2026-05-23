@@ -8,7 +8,13 @@
       "Bash(curl -v \"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=-28.675&longitude=-49.369&localityLanguage=pt\")",
       "Bash(node *)",
       "Bash(npm install *)",
-      "Bash(codex *)"
+      "Bash(codex *)",
+      "Bash(powershell -Command \"Get-ChildItem -Path . -File | Select-Object -ExpandProperty Name\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path . -File -Filter 'tailwind*'\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path . -Recurse -File | Select-Object -ExpandProperty FullName | Sort-Object\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path lib -File; Get-ChildItem -Path lib -Directory | Select-Object -ExpandProperty Name\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path src -File | Select-Object -ExpandProperty Name\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path . -Recurse | Select-Object -ExpandProperty FullName | Sort-Object\")"
     ]
   }
 }

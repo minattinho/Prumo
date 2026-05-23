@@ -1,42 +1,25 @@
-import { Suspense } from "react";
-import { ContractorAuthPanel } from "./contractor-auth-panel";
-import { Logo } from "@/components/layout/logo";
+import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Contratante",
+  title: "Acesso Contratante - Prumo",
 };
 
-export default function ContratantePage() {
-  return (
-    <div className="flex h-full bg-white">
-      <aside className="hidden bg-azul-noite px-12 py-10 lg:flex lg:w-[46%]">
-        <div className="flex h-full max-w-md flex-col justify-between">
-          <Logo variant="white" />
+interface Props {
+  searchParams: Promise<{ modo?: string; next?: string }>;
+}
 
-          <div className="space-y-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-laranja-obra">
-              Para contratantes
-            </p>
-            <h2 className="text-3xl font-black leading-tight text-white xl:text-4xl">
-              Encontre profissionais de confiança perto de você.
-            </h2>
-            <p className="max-w-sm text-base leading-relaxed text-blue-100">
-              Perfis verificados, avaliações reais e contato direto para
-              resolver sua obra com menos atrito.
-            </p>
-          </div>
-        </div>
-      </aside>
+export default async function ContratantePage({ searchParams }: Props) {
+  const { modo, next } = await searchParams;
+  
+  const params = new URLSearchParams();
+  // Map modes appropriately: 'cadastro' triggers register flow
+  params.set("auth", modo === "cadastro" ? "cadastro" : "login");
+  if (modo) {
+    params.set("modo", modo);
+  }
+  if (next) {
+    params.set("next", next);
+  }
 
-      <main className="flex flex-1 items-center justify-center overflow-y-auto px-6 py-8 sm:px-8 lg:px-12">
-        <Suspense
-          fallback={
-            <div className="h-96 w-full max-w-lg animate-pulse rounded-xl bg-gray-100" />
-          }
-        >
-          <ContractorAuthPanel />
-        </Suspense>
-      </main>
-    </div>
-  );
+  redirect(`/?${params.toString()}`);
 }

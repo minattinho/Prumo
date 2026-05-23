@@ -4,6 +4,7 @@ import { useState, useTransition, useRef } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import { CityInput } from "@/components/city-input";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
+import type { ProfessionalPricing } from "@/types";
 import { SERVICE_TAXONOMY, getServiceLabel } from "@/types/services";
 import {
   Camera,
@@ -12,11 +13,12 @@ import {
   Star,
   Save,
   Loader2,
-  Link2,
+  BadgeDollarSign,
 } from "lucide-react";
 import {
   updateBasicInfo,
   updatePhoto,
+  updatePricing,
   updateSpecialties,
   updateAffinities,
   addContactChannel,
@@ -88,7 +90,7 @@ type SocialNetwork = {
   handle_or_url: string;
 };
 
-type ProfileData = {
+type ProfileData = ProfessionalPricing & {
   photo_url: string | null;
   personal_description: string | null;
   city: string | null;
@@ -103,7 +105,6 @@ type Props = {
   affinities: string[];
   channels: Channel[];
   socialNetworks: SocialNetwork[];
-  professionalId: string;
 };
 
 function SaveButton({ isPending, saved }: { isPending: boolean; saved: boolean }) {
@@ -500,6 +501,138 @@ function EspecialidadesTab({
   );
 }
 
+function PricingTab({ profile }: { profile: ProfileData }) {
+  const [pricePerHour, setPricePerHour] = useState(profile.price_per_hour?.toString() ?? "");
+  const [pricePerDay, setPricePerDay] = useState(profile.price_per_day?.toString() ?? "");
+  const [pricePerMonth, setPricePerMonth] = useState(profile.price_per_month?.toString() ?? "");
+  const [pricePerService, setPricePerService] = useState(profile.price_per_service?.toString() ?? "");
+  const [currency, setCurrency] = useState(profile.price_currency ?? "BRL");
+  const [isPending, startTransition] = useTransition();
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const parseOptionalPrice = (value: string) => {
+    const normalized = value.trim().replace(",", ".");
+    if (!normalized) return null;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  };
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSaved(false);
+    setError(null);
+    startTransition(async () => {
+      const res = await updatePricing({
+        price_per_hour: parseOptionalPrice(pricePerHour),
+        price_per_day: parseOptionalPrice(pricePerDay),
+        price_per_month: parseOptionalPrice(pricePerMonth),
+        price_per_service: parseOptionalPrice(pricePerService),
+        price_currency: currency || "BRL",
+      });
+      if (res?.error) setError(res.error);
+      else setSaved(true);
+    });
+  }
+
+  const fields = [
+    {
+      id: "price_per_hour",
+      label: "Por hora",
+      value: pricePerHour,
+      onChange: setPricePerHour,
+      placeholder: "Ex: 120,00",
+    },
+    {
+      id: "price_per_day",
+      label: "Por dia",
+      value: pricePerDay,
+      onChange: setPricePerDay,
+      placeholder: "Ex: 650,00",
+    },
+    {
+      id: "price_per_month",
+      label: "Por mês",
+      value: pricePerMonth,
+      onChange: setPricePerMonth,
+      placeholder: "Ex: 8000,00",
+    },
+    {
+      id: "price_per_service",
+      label: "Por serviço",
+      value: pricePerService,
+      onChange: setPricePerService,
+      placeholder: "Ex: 350,00",
+    },
+  ];
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="bg-white rounded-card shadow-card p-5 space-y-5">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-azul-claro text-azul-principal flex items-center justify-center shrink-0">
+            <BadgeDollarSign className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-azul-noite">Valores de referência</h3>
+            <p className="text-xs text-cinza-texto mt-0.5">
+              Preencha apenas os valores que fazem sentido para seu trabalho. Se não preencher nenhum valor, seu perfil exibirá "Preço sob consulta".
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-azul-noite mb-1.5">
+            Moeda
+          </label>
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="w-full sm:w-40 border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-azul-noite bg-white focus:outline-none focus:ring-2 focus:ring-azul-principal/20 focus:border-azul-principal"
+          >
+            <option value="BRL">BRL, Real</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {fields.map((field) => (
+            <div key={field.id}>
+              <label htmlFor={field.id} className="block text-xs font-medium text-azul-noite mb-1.5">
+                {field.label}
+              </label>
+              <div className="flex items-center rounded-lg border border-gray-200 focus-within:ring-2 focus-within:ring-azul-principal/20 focus-within:border-azul-principal bg-white">
+                <span className="pl-3 text-sm font-medium text-cinza-texto">R$</span>
+                <input
+                  id={field.id}
+                  type="text"
+                  inputMode="decimal"
+                  value={field.value}
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    setSaved(false);
+                  }}
+                  placeholder={field.placeholder}
+                  className="w-full min-w-0 rounded-lg px-2 py-2.5 text-sm text-azul-noite placeholder-gray-400 focus:outline-none"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+          {error}
+        </p>
+      )}
+
+      <div className="flex justify-end">
+        <SaveButton isPending={isPending} saved={saved} />
+      </div>
+    </form>
+  );
+}
+
 function ContatosTab({ initialChannels }: { initialChannels: Channel[] }) {
   const [channels, setChannels] = useState<Channel[]>(initialChannels);
   const [adding, setAdding] = useState(false);
@@ -766,7 +899,6 @@ export function ProfileForm({
   affinities,
   channels,
   socialNetworks,
-  professionalId,
 }: Props) {
   return (
     <Tabs.Root defaultValue="identidade">
@@ -774,6 +906,7 @@ export function ProfileForm({
         {[
           { value: "identidade", label: "Identidade" },
           { value: "especialidades", label: "Especialidades" },
+          { value: "valores", label: "Valores" },
           { value: "contatos", label: "Contatos" },
           { value: "redes", label: "Redes Sociais" },
         ].map(({ value, label }) => (
@@ -795,6 +928,9 @@ export function ProfileForm({
           initialSpecialties={specialties}
           initialAffinities={affinities}
         />
+      </Tabs.Content>
+      <Tabs.Content value="valores">
+        <PricingTab profile={profile} />
       </Tabs.Content>
       <Tabs.Content value="contatos">
         <ContatosTab initialChannels={channels} />

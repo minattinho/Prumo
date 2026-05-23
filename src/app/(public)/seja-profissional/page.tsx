@@ -15,6 +15,8 @@ export const metadata = {
   title: "Anunciar serviços no Prumo — Crie seu perfil grátis",
 };
 
+const displayStyle: React.CSSProperties = { fontFamily: "var(--font-display)" };
+
 const HOW_IT_WORKS = [
   {
     step: "01",
@@ -68,43 +70,31 @@ export default function SejaProfissionalPage() {
     <div className="flex flex-col scroll-smooth">
 
       {/* ─── HERO ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-azul-noite">
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-[0.04]" aria-hidden="true">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid-pro" width="60" height="60" patternUnits="userSpaceOnUse">
-                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid-pro)" />
-          </svg>
-        </div>
+      <section className="bg-azul-noite relative overflow-hidden">
+        {/* Linhas sutis de blueprint em SVG no fundo */}
+        <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{
+          backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }} />
+        
+        {/* Efeitos de iluminação modernos e distintos no fundo */}
+        <div className="absolute top-1/4 -right-20 w-96 h-96 rounded-full bg-azul-principal opacity-[0.12] filter blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full bg-laranja-obra opacity-[0.06] filter blur-3xl pointer-events-none" />
 
-        {/* Gradient blobs */}
-        <div
-          className="absolute -top-32 -right-32 w-125 h-125 rounded-full opacity-10"
-          style={{ background: "radial-gradient(circle, #4A90E2, transparent 70%)" }}
-          aria-hidden="true"
-        />
-        <div
-          className="absolute -bottom-24 -left-24 w-100 h-100 rounded-full opacity-10"
-          style={{ background: "radial-gradient(circle, #E8761A, transparent 70%)" }}
-          aria-hidden="true"
-        />
-
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
             {/* Left: copy */}
             <div>
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1 text-xs text-blue-200 font-medium mb-5">
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1 text-xs text-blue-200 font-medium mb-6">
                 <Clock size={11} />
                 30 dias grátis — sem cartão de crédito
               </div>
 
-              <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight tracking-tight mb-5">
+              <h1
+                className="text-4xl sm:text-5xl font-extrabold text-white leading-[1.02] tracking-tight mb-5"
+                style={displayStyle}
+              >
                 Mostre seu trabalho<br />
                 <span className="text-laranja-obra">para clientes</span><br />
                 que precisam de você
@@ -115,7 +105,6 @@ export default function SejaProfissionalPage() {
                 Sem comissão, sem intermediários, sem enrolação.
               </p>
 
-              {/* Benefits */}
               <ul className="space-y-3 mb-10">
                 {[
                   "Perfil verificado com badge de confiança",
@@ -130,7 +119,6 @@ export default function SejaProfissionalPage() {
                 ))}
               </ul>
 
-              {/* Stats */}
               <div className="grid grid-cols-3 gap-4 pt-8 border-t border-white/10">
                 {[
                   { value: "5.000+", label: "clientes buscando" },
@@ -138,7 +126,12 @@ export default function SejaProfissionalPage() {
                   { value: "13", label: "especialidades" },
                 ].map(({ value, label }) => (
                   <div key={label} className="text-center">
-                    <div className="text-xl font-bold text-white">{value}</div>
+                    <div
+                      className="text-xl font-extrabold text-white"
+                      style={displayStyle}
+                    >
+                      {value}
+                    </div>
                     <div className="text-xs text-blue-300 mt-0.5">{label}</div>
                   </div>
                 ))}
@@ -149,10 +142,18 @@ export default function SejaProfissionalPage() {
             <div id="cadastro" className="lg:sticky lg:top-24">
               <div className="bg-white rounded-card shadow-card p-8">
                 <div className="mb-6">
-                  <p className="text-xs font-semibold text-laranja-obra uppercase tracking-widest mb-1">
+                  <p
+                    className="text-xs font-bold text-laranja-obra uppercase tracking-[0.12em] mb-2"
+                    style={displayStyle}
+                  >
                     Cadastro profissional
                   </p>
-                  <h2 className="text-xl font-bold text-azul-noite">Crie sua conta grátis</h2>
+                  <h2
+                    className="text-xl font-extrabold text-azul-noite tracking-tight"
+                    style={displayStyle}
+                  >
+                    Crie sua conta grátis
+                  </h2>
                   <p className="text-sm text-cinza-texto mt-1">
                     Leva menos de 3 minutos para começar.
                   </p>
@@ -172,15 +173,20 @@ export default function SejaProfissionalPage() {
         </div>
 
         {/* Feature bar */}
-        <div className="relative border-t border-white/10 bg-white/5">
-          <div className="max-w-4xl mx-auto px-4 py-5 grid grid-cols-3 divide-x divide-white/10">
+        <div className="border-t border-white/10 bg-white/5 relative z-10">
+          <div className="max-w-4xl mx-auto px-4 py-5 flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-white/10">
             {[
               { label: "Contato direto", sublabel: "Sem intermediários ou taxas" },
               { label: "Portfólio verificado", sublabel: "Fotos de obras reais" },
               { label: "13 categorias", sublabel: "De construção a projeto" },
             ].map(({ label, sublabel }) => (
-              <div key={label} className="text-center px-4">
-                <div className="text-sm sm:text-base font-bold text-white">{label}</div>
+              <div key={label} className="flex-1 text-center px-4 py-3 sm:py-0">
+                <div
+                  className="text-sm sm:text-base font-bold text-white"
+                  style={displayStyle}
+                >
+                  {label}
+                </div>
                 <div className="text-xs text-blue-300 mt-0.5">{sublabel}</div>
               </div>
             ))}
@@ -189,47 +195,65 @@ export default function SejaProfissionalPage() {
       </section>
 
       {/* ─── COMO FUNCIONA ────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 px-4 bg-white">
+      <section className="py-16 sm:py-20 px-4 bg-white border-y border-gray-100">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-laranja-obra uppercase tracking-widest mb-2">
+          <div className="mb-14">
+            <p
+              className="text-xs font-bold uppercase tracking-[0.12em] text-laranja-obra mb-3"
+              style={displayStyle}
+            >
               Para profissionais
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-azul-noite">
+            <h2
+              className="text-3xl sm:text-4xl font-extrabold text-azul-noite tracking-tight"
+              style={displayStyle}
+            >
               Como funciona para você
             </h2>
-            <p className="text-cinza-texto mt-2 text-sm max-w-md mx-auto">
+            <p className="text-cinza-texto mt-2 text-sm">
               Três passos para começar a receber clientes
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 relative">
-            {/* Connecting line desktop */}
-            <div
-              className="hidden sm:block absolute top-10 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-linear-to-r from-azul-principal/20 via-azul-principal/60 to-azul-principal/20"
-              aria-hidden="true"
-            />
-
+          <div className="flex flex-col gap-0 divide-y divide-gray-100">
             {HOW_IT_WORKS.map(({ step, icon: Icon, title, description, highlight }) => (
-              <div key={step} className="flex flex-col items-center text-center relative">
-                <div className="relative mb-6">
-                  <div className="w-20 h-20 rounded-2xl bg-azul-claro border-2 border-azul-principal/10 flex items-center justify-center shadow-sm">
-                    <Icon size={30} className="text-azul-principal" />
+              <div
+                key={step}
+                className="flex flex-col md:flex-row md:items-start gap-5 py-8 first:pt-0 last:pb-0"
+              >
+                <div
+                  className="text-7xl sm:text-8xl font-extrabold text-azul-claro leading-none select-none shrink-0 w-28 text-right hidden md:block"
+                  style={displayStyle}
+                  aria-hidden="true"
+                >
+                  {step}
+                </div>
+                <div className="flex-1 pt-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-azul-claro flex items-center justify-center shrink-0 md:hidden">
+                      <Icon size={16} className="text-azul-principal" />
+                    </div>
+                    <span className="text-xs font-bold text-laranja-obra uppercase tracking-widest">
+                      {highlight}
+                    </span>
                   </div>
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-azul-principal text-white text-xs font-bold flex items-center justify-center">
-                    {step.slice(1)}
-                  </span>
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-azul-claro items-center justify-center shrink-0 hidden md:flex">
+                      <Icon size={18} className="text-azul-principal" />
+                    </div>
+                    <div>
+                      <h3
+                        className="text-xl font-bold text-azul-noite mb-2"
+                        style={displayStyle}
+                      >
+                        {title}
+                      </h3>
+                      <p className="text-sm text-cinza-texto leading-relaxed max-w-md">
+                        {description}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-medium px-3 py-1 rounded-full mb-3">
-                  <CheckCircle2 size={12} />
-                  {highlight}
-                </div>
-
-                <h3 className="font-bold text-azul-noite mb-2 text-base">{title}</h3>
-                <p className="text-sm text-cinza-texto leading-relaxed max-w-xs mx-auto">
-                  {description}
-                </p>
               </div>
             ))}
           </div>
@@ -239,14 +263,20 @@ export default function SejaProfissionalPage() {
       {/* ─── DIFERENCIAIS ─────────────────────────────────────── */}
       <section className="py-16 sm:py-20 px-4 bg-azul-claro">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-xs font-semibold text-laranja-obra uppercase tracking-widest mb-2">
+          <div className="mb-12">
+            <p
+              className="text-xs font-bold uppercase tracking-[0.12em] text-laranja-obra mb-3"
+              style={displayStyle}
+            >
               Diferenciais
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-azul-noite">
+            <h2
+              className="text-3xl sm:text-4xl font-extrabold text-azul-noite tracking-tight"
+              style={displayStyle}
+            >
               Por que anunciar no Prumo?
             </h2>
-            <p className="text-cinza-texto mt-2 text-sm max-w-md mx-auto">
+            <p className="text-cinza-texto mt-2 text-sm max-w-md">
               Uma plataforma construída para valorizar quem faz o trabalho de verdade
             </p>
           </div>
@@ -255,12 +285,17 @@ export default function SejaProfissionalPage() {
             {BENEFITS.map(({ icon: Icon, title, description }) => (
               <div
                 key={title}
-                className="bg-white rounded-card shadow-card p-7 border border-azul-principal/10"
+                className="bg-white rounded-xl shadow-card p-7 border border-azul-principal/10"
               >
-                <div className="w-12 h-12 rounded-xl bg-azul-claro flex items-center justify-center mb-5">
-                  <Icon size={22} className="text-azul-principal" />
+                <div className="w-10 h-10 rounded-lg bg-azul-claro flex items-center justify-center mb-5">
+                  <Icon size={18} className="text-azul-principal" />
                 </div>
-                <h3 className="font-bold text-azul-noite mb-2">{title}</h3>
+                <h3
+                  className="font-bold text-azul-noite mb-2"
+                  style={displayStyle}
+                >
+                  {title}
+                </h3>
                 <p className="text-sm text-cinza-texto leading-relaxed">{description}</p>
               </div>
             ))}

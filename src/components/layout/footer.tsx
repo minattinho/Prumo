@@ -77,7 +77,7 @@ export function Footer() {
             <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-8">
               {navSections.map((section) => (
                 <div key={section.title}>
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-medio mb-5">
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-azul-medio mb-5" style={{ fontFamily: "var(--font-display)" }}>
                     {section.title}
                   </h3>
                   <ul className="flex flex-col gap-3">

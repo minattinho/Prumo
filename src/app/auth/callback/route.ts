@@ -44,6 +44,39 @@ export async function GET(request: Request) {
         return redirectToAuthError(origin, authRoute, next);
       }
 
+      // Validação de papel (role) estrita para evitar login cruzado (cross-login)
+      const { data: profileCheck } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profileCheck) {
+        if (authSource === "contractor" && profileCheck.role !== "contractor") {
+          await supabase.auth.signOut();
+          const redirectUrl = new URL(authRoute, origin);
+          const errorType =
+            profileCheck.role === "professional"
+              ? "role_mismatch_professional"
+              : "role_mismatch_admin";
+          redirectUrl.searchParams.set("error", errorType);
+          if (next !== "/") redirectUrl.searchParams.set("next", next);
+          return NextResponse.redirect(redirectUrl.toString());
+        }
+
+        if (
+          authSource === "professional" &&
+          profileCheck.role !== "professional" &&
+          profileCheck.role !== "admin"
+        ) {
+          await supabase.auth.signOut();
+          const redirectUrl = new URL(authRoute, origin);
+          redirectUrl.searchParams.set("error", "role_mismatch_contractor");
+          if (next !== "/") redirectUrl.searchParams.set("next", next);
+          return NextResponse.redirect(redirectUrl.toString());
+        }
+      }
+
       const isProfessionalSignup =
         newProfessional || user.user_metadata?.role === "professional";
 

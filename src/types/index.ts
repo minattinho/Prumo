@@ -51,6 +51,14 @@ export type ContactLogType =
 
 export type VerificationStatus = "APPROVED" | "REJECTED";
 
+export type ProfessionalPricing = {
+  price_per_hour: number | null;
+  price_per_day: number | null;
+  price_per_month: number | null;
+  price_per_service: number | null;
+  price_currency: string | null;
+};
+
 export type SerproCpfResponse = {
   ni: string;
   nome: string;

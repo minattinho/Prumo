@@ -21,7 +21,18 @@
   --color-foreground: #1A2B4A;
 
   /* Typography */
-  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-barlow), "Barlow", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+
+  /* Terracotta Palette */
+  --color-terra-surf:     oklch(97% 0.012 55);
+  --color-terra-stone:    oklch(93% 0.014 55);
+  --color-terra-border:   oklch(88% 0.018 55);
+  --color-terra-mid:      oklch(62% 0.16 42);
+  --color-terra-deep:     oklch(48% 0.14 38);
+  --color-terra-amber:    oklch(75% 0.14 72);
+  --color-terra-charcoal: oklch(30% 0.03 50);
+  --color-terra-dark:     oklch(22% 0.04 45);
 
   /* Border Radius */
   --radius-card: 12px;

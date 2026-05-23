@@ -1,4 +1,0 @@
-# Dependencies para os agents do Prumo
-# OpenRouter usa urllib padrao (stdlib) — sem deps obrigatorias
-# Descomente apenas se for usar Groq como fallback:
-# groq>=0.4.0

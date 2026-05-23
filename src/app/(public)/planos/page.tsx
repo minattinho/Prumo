@@ -3,6 +3,8 @@ import { CheckoutButton } from "./checkout-button";
 import { CheckCircle2, Zap, Shield, TrendingUp, CreditCard, Clock } from "lucide-react";
 import type { Metadata } from "next";
 
+const displayStyle: React.CSSProperties = { fontFamily: "var(--font-display)" };
+
 export const metadata: Metadata = {
   title: "Planos — Prumo",
   description: "Assine o Prumo Pro e apareça para mais clientes na sua região.",
@@ -39,7 +41,7 @@ export default async function PlanosPage() {
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-azul-noite">Prumo Pro</h1>
+          <h1 className="text-3xl font-extrabold text-azul-noite tracking-tight" style={displayStyle}>Prumo Pro</h1>
           <p className="text-cinza-texto mt-2 text-sm">
             Tudo que você precisa para conquistar mais clientes.
           </p>
@@ -47,14 +49,14 @@ export default async function PlanosPage() {
 
         {/* Plan card */}
         <div className="bg-white rounded-2xl shadow-card overflow-hidden">
-          <div className="h-1.5 bg-linear-to-r from-azul-principal to-azul-medio" />
+          <div className="h-1 bg-azul-principal" />
 
           <div className="p-7">
             {/* Price */}
             <div className="text-center mb-6">
               <div className="inline-flex items-baseline gap-1">
                 <span className="text-sm text-cinza-texto font-medium">R$</span>
-                <span className="text-5xl font-bold text-azul-noite">79</span>
+                <span className="text-5xl font-extrabold text-azul-noite" style={displayStyle}>79</span>
                 <span className="text-sm text-cinza-texto">/mês</span>
               </div>
               <p className="text-xs text-green-600 font-semibold mt-1.5">

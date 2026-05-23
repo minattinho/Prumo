@@ -1,5 +1,3 @@
-import { ShieldCheck, Star, Wrench } from "lucide-react";
-
 const metrics = [
   { value: "1.200+", label: "profissionais verificados" },
   { value: "5.000+", label: "serviços realizados" },
@@ -26,33 +24,36 @@ const testimonials = [
 
 export function SocialProof() {
   return (
-    <section className="py-16 sm:py-20 px-4 bg-white">
+    <section className="py-14 px-4 bg-white border-b border-gray-100">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        {/* Stat strip */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-0 mb-14 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
           {metrics.map(({ value, label }) => (
-            <div key={label} className="rounded-card border border-gray-100 bg-[#F8FAFC] p-5 text-center">
-              <p className="text-2xl font-bold text-azul-noite">{value}</p>
-              <p className="text-sm text-cinza-texto mt-1">{label}</p>
+            <div key={label} className="flex flex-col items-center px-10 py-4 sm:py-0">
+              <span
+                className="text-4xl font-extrabold text-azul-noite leading-none tracking-tight"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                {value}
+              </span>
+              <span className="text-sm text-cinza-texto/70 mt-1">{label}</span>
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {testimonials.map(({ name, role, quote }, index) => {
-            const Icon = index === 0 ? Wrench : index === 1 ? ShieldCheck : Star;
-            return (
-              <article key={name} className="rounded-card border border-gray-100 p-5 shadow-card bg-white">
-                <div className="w-10 h-10 rounded-lg bg-azul-claro text-azul-principal flex items-center justify-center mb-4">
-                  <Icon size={18} />
-                </div>
-                <p className="text-sm text-cinza-texto leading-relaxed">{quote}</p>
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-azul-noite">{name}</p>
-                  <p className="text-xs text-cinza-texto">{role}</p>
-                </div>
-              </article>
-            );
-          })}
+        {/* Testimonials */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {testimonials.map(({ name, role, quote }) => (
+            <article key={name} className="border border-gray-100 rounded-xl p-6 bg-[#F8FAFC]">
+              <p className="text-sm text-cinza-texto leading-relaxed mb-5">
+                &ldquo;{quote}&rdquo;
+              </p>
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-sm font-semibold text-azul-noite">{name}</p>
+                <p className="text-xs text-cinza-texto/70 mt-0.5">{role}</p>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
     </section>

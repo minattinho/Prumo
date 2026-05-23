@@ -12,6 +12,7 @@ interface AdminSidebarProps {
 
 const navItems = [
   { label: "Dashboard",      href: "/admin",              icon: LayoutDashboard, exact: true  },
+  { label: "Moderação",      href: "/admin/moderacao",    icon: ShieldCheck,     exact: false },
   { label: "Criar usuário",  href: "/admin/criar-usuario", icon: UserPlus,        exact: false },
   { label: "Usuários",       href: "/admin/usuarios",      icon: Users,           exact: false },
 ];

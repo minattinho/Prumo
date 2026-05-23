@@ -2,10 +2,16 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "./profile-form";
 import Link from "next/link";
 import { Eye } from "lucide-react";
+import type { ProfessionalPricing } from "@/types";
 
 export const metadata = {
   title: "Editar Perfil",
 };
+
+type SpecialtyRow = { category: string };
+type AffinityRow = { tag: string };
+type ChannelRow = { id: string; type: string; value: string; is_primary: boolean };
+type SocialNetworkRow = { platform: string; handle_or_url: string };
 
 export default async function PainelPerfilPage() {
   const supabase = await createClient();
@@ -17,10 +23,10 @@ export default async function PainelPerfilPage() {
 
   const { data: pro } = await supabase
     .from("professional_profiles")
-    .select("id, photo_url, personal_description, city, state, service_radius_km, slug")
+    .select("id, photo_url, personal_description, city, state, service_radius_km, slug, price_per_hour, price_per_day, price_per_month, price_per_service, price_currency")
     .eq("user_id", user!.id)
     .single() as {
-    data: {
+    data: ProfessionalPricing & {
       id: string;
       photo_url: string | null;
       personal_description: string | null;
@@ -31,10 +37,10 @@ export default async function PainelPerfilPage() {
     } | null;
   };
 
-  let specialtiesData: { category: string }[] = [];
-  let affinitiesData: { tag: string }[] = [];
-  let channelsData: { id: string; type: string; value: string; is_primary: boolean }[] = [];
-  let socialsData: { platform: string; handle_or_url: string }[] = [];
+  let specialtiesData: SpecialtyRow[] = [];
+  let affinitiesData: AffinityRow[] = [];
+  let channelsData: ChannelRow[] = [];
+  let socialsData: SocialNetworkRow[] = [];
 
   if (pro?.id) {
     const [sp, af, ch, sn] = await Promise.all([
@@ -50,10 +56,10 @@ export default async function PainelPerfilPage() {
         .select("platform, handle_or_url")
         .eq("professional_id", pro.id),
     ]);
-    specialtiesData = (sp.data as any[]) ?? [];
-    affinitiesData = (af.data as any[]) ?? [];
-    channelsData = (ch.data as any[]) ?? [];
-    socialsData = (sn.data as any[]) ?? [];
+    specialtiesData = (sp.data as SpecialtyRow[] | null) ?? [];
+    affinitiesData = (af.data as AffinityRow[] | null) ?? [];
+    channelsData = (ch.data as ChannelRow[] | null) ?? [];
+    socialsData = (sn.data as SocialNetworkRow[] | null) ?? [];
   }
 
   return (
@@ -85,13 +91,17 @@ export default async function PainelPerfilPage() {
           city: pro?.city ?? null,
           state: pro?.state ?? null,
           service_radius_km: pro?.service_radius_km ?? null,
+          price_per_hour: pro?.price_per_hour ?? null,
+          price_per_day: pro?.price_per_day ?? null,
+          price_per_month: pro?.price_per_month ?? null,
+          price_per_service: pro?.price_per_service ?? null,
+          price_currency: pro?.price_currency ?? "BRL",
         }}
         fullName={fullName}
         specialties={specialtiesData.map((s) => s.category)}
         affinities={affinitiesData.map((a) => a.tag)}
         channels={channelsData}
         socialNetworks={socialsData}
-        professionalId={pro?.id ?? ""}
       />
     </div>
   );

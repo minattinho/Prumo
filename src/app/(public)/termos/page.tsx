@@ -87,8 +87,17 @@ export default function TermosPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-azul-noite text-white py-20 px-6">
-        <div className="max-w-4xl mx-auto">
+      <section className="bg-azul-noite text-white py-20 px-6 relative overflow-hidden">
+        {/* Linhas sutis de blueprint em SVG no fundo */}
+        <div className="absolute inset-0 opacity-[0.015] pointer-events-none" style={{
+          backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }} />
+        
+        {/* Efeitos de iluminação modernos no fundo */}
+        <div className="absolute top-1/4 -right-20 w-80 h-80 rounded-full bg-azul-principal opacity-[0.10] filter blur-3xl pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto relative z-10">
           <p className="text-laranja-obra text-sm font-semibold uppercase tracking-widest mb-4">
             Empresa
           </p>

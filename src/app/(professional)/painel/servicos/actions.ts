@@ -33,8 +33,8 @@ export async function createService(data: {
     service_type: data.service_type,
     value: data.value,
     execution_date: data.execution_date,
-    status: data.status,
-    origin: data.origin,
+    status: data.status as any,
+    origin: data.origin as any,
   });
 
   if (error) return { error: "Erro ao registrar serviço" };
@@ -67,8 +67,8 @@ export async function updateService(
       service_type: data.service_type,
       value: data.value,
       execution_date: data.execution_date,
-      status: data.status,
-      origin: data.origin,
+      status: data.status as any,
+      origin: data.origin as any,
     })
     .eq("id", id)
     .eq("professional_id", proId);

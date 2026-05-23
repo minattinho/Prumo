@@ -41,7 +41,7 @@ export async function Header() {
             ) : (
               <>
                 <Link
-                  href="/contratante"
+                  href="/?auth=login"
                   className="text-sm font-medium text-azul-noite hover:text-azul-principal transition-colors"
                 >
                   Entrar

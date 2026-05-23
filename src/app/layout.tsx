@@ -1,20 +1,26 @@
 import type { Metadata } from "next";
-import { Inter, Geist } from "next/font/google";
+import { Barlow, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const inter = Inter({
-  variable: "--font-inter",
+const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
+  variable: "--font-bricolage",
+  weight: ["400", "600", "700", "800"],
+  display: "swap",
+});
+
+const barlow = Barlow({
+  subsets: ["latin"],
+  variable: "--font-barlow",
+  weight: ["400", "600", "700"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Prumo — Marketplace de Profissionais",
+    default: "Prumo",
     template: "%s | Prumo",
   },
   description:
@@ -47,7 +53,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={cn("h-full", "antialiased", inter.variable, "font-sans", geist.variable)}>
+    <html lang="pt-BR" className={cn("h-full", "antialiased", bricolage.variable, barlow.variable, "font-sans")}>
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <TooltipProvider>{children}</TooltipProvider>
       </body>

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getCookieDomain } from "./lib/supabase/cookie-domain";
 
 const PROFESSIONAL_ROUTES = ["/painel"];
 const CONTRACTOR_ROUTES = ["/minha-conta"];
@@ -11,8 +12,11 @@ export async function proxy(request: NextRequest) {
     "";
   const { pathname } = request.nextUrl;
 
-  // Dev: skip subdomain routing
-  if (!host.includes("localhost") && !host.includes("127.0.0.1")) {
+  // Dev: skip subdomain routing unless explicitly testing it (e.g. app.localhost)
+  const isLocalhost = host.includes("localhost") || host.includes("127.0.0.1");
+  const isSubdomainDev = isLocalhost && host.startsWith("app.");
+
+  if (!isLocalhost || isSubdomainDev) {
     const isApp = host.startsWith("app.");
 
     if (isApp) {
@@ -56,9 +60,18 @@ export async function proxy(request: NextRequest) {
           );
           response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, {
+              ...options,
+              domain: getCookieDomain(),
+            })
           );
         },
+      },
+      cookieOptions: {
+        domain: getCookieDomain(),
+        path: "/",
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
       },
     }
   );

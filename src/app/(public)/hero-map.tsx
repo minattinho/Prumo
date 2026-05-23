@@ -234,7 +234,9 @@ export default function HeroMap() {
       // 5. Build markers
       const built: MarkerData[] = [];
       for (const [key, profs] of sorted) {
-        const [city, state] = key.split(",");
+        const parts = key.split(",");
+        const state = parts.pop() || "";
+        const city = parts.join(",");
         const geocodeKey = `${city},${state}`;
         const c = coordsMap.get(geocodeKey);
         if (c) {
@@ -279,7 +281,7 @@ export default function HeroMap() {
     <MapContainer
       center={[userCoords.lat, userCoords.lng]}
       zoom={zoom}
-      scrollWheelZoom={false}
+      scrollWheelZoom={true}
       style={{ width: "100%", height: "100%" }}
     >
       <TileLayer

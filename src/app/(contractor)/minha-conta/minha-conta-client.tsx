@@ -18,6 +18,7 @@ import {
   Lock,
   ChevronRight,
   Hammer,
+  Check,
 } from "lucide-react";
 import { getServiceLabel } from "@/types/services";
 import { formatDate } from "@/lib/utils";
@@ -26,6 +27,8 @@ import {
   updateContractorProfile,
   submitEvaluation,
   sendPasswordReset,
+  acceptProposal,
+  rejectProposal,
 } from "./actions";
 
 type Professional = {
@@ -53,12 +56,32 @@ type Evaluation = {
   professional: Professional | null;
 };
 
+type Proposal = {
+  id: string;
+  total_value: number | string;
+  deadline_days: number;
+  payment_stages: number;
+  approach_description: string;
+  status: "SENT" | "ACCEPTED" | "REJECTED";
+  created_at: string;
+};
+
+type BudgetRequest = {
+  id: string;
+  message: string;
+  status: "NEW" | "REPLIED" | "IN_NEGOTIATION" | "REFUSED";
+  created_at: string;
+  professional: Professional | null;
+  proposals: Proposal[];
+};
+
 type Props = {
   profile: { full_name: string | null; email: string | null; phone: string | null };
   contractorId: string | null;
   contacts: Contact[];
   evaluations: Evaluation[];
   pendingContacts: Contact[];
+  budgetRequests: BudgetRequest[];
 };
 
 function StarRating({
@@ -328,12 +351,195 @@ function UserInitialsAvatar({ name }: { name: string | null }) {
   );
 }
 
+function BudgetRequestCard({
+  request,
+  statusLabel,
+  statusClass,
+}: {
+  request: BudgetRequest;
+  statusLabel: string;
+  statusClass: string;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function handleAccept(proposalId: string) {
+    if (!confirm("Deseja aceitar esta proposta? Isso recusará as outras propostas recebidas para esta solicitação.")) return;
+    setError(null);
+    startTransition(async () => {
+      const res = await acceptProposal(proposalId, request.id);
+      if (res?.error) setError(res.error);
+    });
+  }
+
+  function handleReject(proposalId: string) {
+    if (!confirm("Deseja recusar esta proposta?")) return;
+    setError(null);
+    startTransition(async () => {
+      const res = await rejectProposal(proposalId, request.id);
+      if (res?.error) setError(res.error);
+    });
+  }
+
+  const proName = request.professional?.profiles?.full_name ?? "Profissional";
+  const specialties = request.professional?.professional_specialties ?? [];
+
+  return (
+    <div className="bg-white rounded-card shadow-card overflow-hidden">
+      <div className="p-5">
+        {/* Header: Professional details + date */}
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4 pb-4 border-b border-gray-50">
+          <div className="flex items-center gap-3">
+            <ProfessionalAvatar pro={request.professional} />
+            <div>
+              <p className="font-semibold text-azul-noite text-sm">{proName}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                {specialties[0] && (
+                  <span className="text-xs bg-azul-claro text-azul-principal px-2 py-0.5 rounded-full font-medium">
+                    {getServiceLabel(specialties[0].category)}
+                  </span>
+                )}
+                {request.professional?.city && (
+                  <span className="flex items-center gap-1 text-xs text-cinza-texto">
+                    <MapPin className="w-3 h-3 text-gray-400" />
+                    {request.professional.city}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusClass}`}>
+              {statusLabel}
+            </span>
+            <span className="text-xs text-cinza-texto">{formatDate(request.created_at)}</span>
+          </div>
+        </div>
+
+        {/* Message body */}
+        <div className="space-y-1 ml-13">
+          <p className="text-xs font-bold uppercase tracking-wider text-cinza-texto mb-1">Seu Pedido:</p>
+          <p className="text-sm text-cinza-texto leading-relaxed whitespace-pre-line bg-gray-50/50 p-3 rounded-lg border border-gray-100">
+            {request.message}
+          </p>
+        </div>
+
+        {/* Proposals Section */}
+        {request.proposals.length > 0 && (
+          <div className="mt-5 ml-13 space-y-3 pt-4 border-t border-gray-100">
+            <p className="text-xs font-bold uppercase tracking-wider text-azul-noite flex items-center gap-1">
+              <ClipboardCheck className="w-3.5 h-3.5 text-azul-principal" />
+              Propostas Recebidas ({request.proposals.length})
+            </p>
+
+            <div className="space-y-3">
+              {request.proposals.map((p) => {
+                const isAccepted = p.status === "ACCEPTED";
+                const isRejected = p.status === "REJECTED";
+                
+                const formattedPrice = new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(typeof p.total_value === "number" ? p.total_value : Number(p.total_value));
+
+                return (
+                  <div key={p.id} className={`rounded-xl p-4 border text-sm transition-all ${
+                    isAccepted ? "bg-green-50/50 border-green-200" :
+                    isRejected ? "bg-gray-50/50 border-gray-200 opacity-60" :
+                    "bg-white border-gray-100 shadow-sm"
+                  }`}>
+                    {/* Proposal Details */}
+                    <div className="flex justify-between items-start gap-4 flex-wrap mb-3">
+                      <div className="flex gap-4 flex-wrap">
+                        <div>
+                          <span className="text-xs text-cinza-texto block font-medium">Valor Total</span>
+                          <span className="font-bold text-azul-noite text-base">{formattedPrice}</span>
+                        </div>
+                        <div>
+                          <span className="text-xs text-cinza-texto block font-medium">Prazo</span>
+                          <span className="font-semibold text-azul-noite">{p.deadline_days} dias</span>
+                        </div>
+                        <div>
+                          <span className="text-xs text-cinza-texto block font-medium">Condições</span>
+                          <span className="font-semibold text-azul-noite">
+                            {p.payment_stages === 1 ? "À vista" : `${p.payment_stages} parcelas`}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Status badge */}
+                      <div>
+                        {isAccepted && (
+                          <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700">
+                            <Check className="w-3 h-3" />
+                            Aceita
+                          </span>
+                        )}
+                        {isRejected && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
+                            Recusada
+                          </span>
+                        )}
+                        {p.status === "SENT" && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-azul-claro text-azul-principal">
+                            Aguardando resposta
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Proposal description */}
+                    <div className="bg-gray-50/30 p-3 rounded-lg border border-gray-100/50 text-xs text-cinza-texto leading-relaxed mb-3">
+                      <span className="font-bold text-azul-noite block mb-1">Como vou fazer o serviço:</span>
+                      {p.approach_description}
+                    </div>
+
+                    {/* Actions */}
+                    {p.status === "SENT" && (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => handleAccept(p.id)}
+                          className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          Aceitar Proposta
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => handleReject(p.id)}
+                          className="inline-flex items-center gap-1 border border-gray-200 hover:bg-gray-50 text-cinza-texto disabled:opacity-50 text-xs font-semibold px-3 py-2 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Recusar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <p className="text-xs text-red-600 mt-2 ml-13 bg-red-50 border border-red-100 rounded px-2.5 py-1.5 w-fit">
+            {error}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function MinhaContaClient({
   profile,
   contractorId,
   contacts,
   evaluations,
   pendingContacts,
+  budgetRequests,
 }: Props) {
   const [evaluateContact, setEvaluateContact] = useState<Contact | null>(null);
   const evaluatedIds = new Set(evaluations.map((e) => e.professional_id));
@@ -378,6 +584,7 @@ export function MinhaContaClient({
           <Tabs.List className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden w-full sm:w-fit">
             {[
               { value: "overview", label: "Visão Geral" },
+              { value: "budgets", label: budgetRequests.length > 0 ? `Orçamentos (${budgetRequests.length})` : "Orçamentos" },
               { value: "professionals", label: contacts.length > 0 ? `Profissionais (${contacts.length})` : "Profissionais" },
               { value: "evaluations", label: evaluations.length > 0 ? `Avaliações (${evaluations.length})` : "Avaliações" },
               { value: "pending", label: pendingContacts.length > 0 ? `Pendentes (${pendingContacts.length})` : "Pendentes" },
@@ -457,6 +664,49 @@ export function MinhaContaClient({
                 Buscar profissionais
               </Link>
             </div>
+          </Tabs.Content>
+
+          {/* Orçamentos */}
+          <Tabs.Content value="budgets" className="space-y-4">
+            {budgetRequests.length === 0 ? (
+              <div className="bg-white rounded-card shadow-card text-center py-16 px-6">
+                <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+                  <ClipboardCheck className="w-7 h-7 text-gray-300" />
+                </div>
+                <h3 className="text-base font-semibold text-azul-noite mb-1">
+                  Nenhum orçamento solicitado
+                </h3>
+                <p className="text-sm text-cinza-texto max-w-xs mx-auto">
+                  Quando você solicitar orçamentos para profissionais, eles aparecerão aqui.
+                </p>
+                <Link
+                  href="/profissionais"
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm text-azul-principal font-semibold hover:underline"
+                >
+                  Buscar profissionais <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {budgetRequests.map((br) => {
+                  const statusLabel =
+                    br.status === "NEW" ? "Novo" :
+                    br.status === "REPLIED" ? "Respondido" :
+                    br.status === "IN_NEGOTIATION" ? "Em negociação" :
+                    "Recusado";
+                  
+                  const statusClass =
+                    br.status === "NEW" ? "bg-azul-claro text-azul-principal border border-azul-principal/20" :
+                    br.status === "REPLIED" ? "bg-green-100 text-green-700 border border-green-200" :
+                    br.status === "IN_NEGOTIATION" ? "bg-amber-100 text-amber-700 border border-amber-200" :
+                    "bg-gray-100 text-gray-500 border border-gray-200";
+
+                  return (
+                    <BudgetRequestCard key={br.id} request={br} statusLabel={statusLabel} statusClass={statusClass} />
+                  );
+                })}
+              </div>
+            )}
           </Tabs.Content>
 
           {/* Profissionais */}

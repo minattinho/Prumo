@@ -47,3 +47,11 @@ ai/scripts/__pycache__/
 
 # private brand documentation
 .prumo-brand/
+
+# test reports and results
+/playwright-report/
+/test-results/
+
+# internal tools
+/.agents/
+/.impeccable/

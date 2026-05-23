@@ -27,13 +27,15 @@ const STRENGTH_CONFIG = [
   { label: "Forte", color: "bg-green-500" },
 ];
 
-function RegisterFormInner({ defaultNext = "/", onSuccess }: RegisterFormProps) {
+function RegisterFormInner({
+  defaultNext = "/",
+  onSuccess,
+}: RegisterFormProps) {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? defaultNext;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -49,16 +51,6 @@ function RegisterFormInner({ defaultNext = "/", onSuccess }: RegisterFormProps) 
       auth: "contractor",
     });
     return `${window.location.origin}/auth/callback?${callbackParams.toString()}`;
-  }
-
-  function formatPhone(value: string) {
-    const digits = value.replace(/\D/g, "").slice(0, 11);
-    if (digits.length <= 2) return digits;
-    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-    if (digits.length <= 10) {
-      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-    }
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   }
 
   async function handleGoogleSignup() {
@@ -88,7 +80,7 @@ function RegisterFormInner({ defaultNext = "/", onSuccess }: RegisterFormProps) 
       email,
       password,
       options: {
-        data: { full_name: name, phone: phone || null },
+        data: { full_name: name },
         emailRedirectTo: getCallbackUrl(),
       },
     });
@@ -138,15 +130,15 @@ function RegisterFormInner({ defaultNext = "/", onSuccess }: RegisterFormProps) 
   }
 
   const inputClass =
-    "w-full border border-gray-300 bg-gray-50 rounded-xl px-4 py-3 text-sm text-azul-noite placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent focus:bg-white transition-all duration-200";
+    "w-full border border-gray-300 bg-gray-50 rounded-xl px-4 py-2.5 text-sm text-azul-noite placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-principal focus:border-transparent focus:bg-white transition-all duration-200";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 [@media(max-height:700px)]:space-y-2">
       <button
         type="button"
         onClick={handleGoogleSignup}
         disabled={googleLoading}
-        className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-xl py-3 px-4 text-sm font-medium text-azul-noite bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-60 cursor-pointer"
+        className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-xl py-2.5 px-4 text-sm font-medium text-azul-noite bg-white hover:bg-gray-50 transition-colors duration-200 disabled:opacity-60 cursor-pointer"
       >
         <GoogleIcon />
         {googleLoading ? "Redirecionando..." : "Continuar com Google"}
@@ -158,11 +150,14 @@ function RegisterFormInner({ defaultNext = "/", onSuccess }: RegisterFormProps) 
         <div className="flex-1 h-px bg-gray-200" />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-2.5 [@media(max-height:700px)]:space-y-2"
+      >
         <div>
           <label
             htmlFor="name"
-            className="block text-sm font-medium text-azul-noite mb-1"
+            className="block text-sm font-medium text-azul-noite mb-0.5"
           >
             Nome completo
           </label>
@@ -181,7 +176,7 @@ function RegisterFormInner({ defaultNext = "/", onSuccess }: RegisterFormProps) 
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-azul-noite mb-1"
+            className="block text-sm font-medium text-azul-noite mb-0.5"
           >
             E-mail
           </label>
@@ -197,29 +192,12 @@ function RegisterFormInner({ defaultNext = "/", onSuccess }: RegisterFormProps) 
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="phone"
-            className="block text-sm font-medium text-azul-noite mb-1"
-          >
-            Telefone{" "}
-            <span className="text-cinza-texto font-normal">(opcional)</span>
-          </label>
-          <input
-            id="phone"
-            type="tel"
-            autoComplete="tel"
-            value={phone}
-            onChange={(e) => setPhone(formatPhone(e.target.value))}
-            className={inputClass}
-            placeholder="(11) 99999-9999"
-          />
-        </div>
+
 
         <div>
           <label
             htmlFor="password"
-            className="block text-sm font-medium text-azul-noite mb-1"
+            className="block text-sm font-medium text-azul-noite mb-0.5"
           >
             Senha
           </label>
@@ -244,7 +222,7 @@ function RegisterFormInner({ defaultNext = "/", onSuccess }: RegisterFormProps) 
                   />
                 ))}
               </div>
-              <p className="text-xs mt-1 text-cinza-texto">
+              <p className="text-xs mt-0.5 text-cinza-texto">
                 {strengthInfo.label}
               </p>
             </div>
@@ -271,7 +249,7 @@ function RegisterFormInner({ defaultNext = "/", onSuccess }: RegisterFormProps) 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-azul-principal hover:bg-azul-noite text-white font-semibold rounded-xl py-3 text-sm transition-colors duration-200 disabled:opacity-60 cursor-pointer"
+          className="w-full bg-azul-principal hover:bg-azul-noite text-white font-semibold rounded-xl py-2.5 text-sm transition-colors duration-200 disabled:opacity-60 cursor-pointer"
         >
           {loading ? "Criando conta..." : "Criar conta grátis"}
         </button>

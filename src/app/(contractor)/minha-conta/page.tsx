@@ -84,6 +84,59 @@ export default async function MinhaContaPage() {
   const evaluatedProIds = new Set(evaluations.map((e: any) => e.professional_id));
   const pendingContacts = contacts.filter((c: any) => !evaluatedProIds.has(c.professional_id));
 
+  // Buscar solicitações de orçamento enviadas por este contratante e propostas recebidas
+  const { data: brData } = await supabase
+    .from("budget_requests")
+    .select(`
+      id,
+      message,
+      status,
+      created_at,
+      professional_profiles (
+        id,
+        slug,
+        city,
+        photo_url,
+        profiles (
+          name
+        ),
+        professional_specialties (
+          category
+        )
+      ),
+      proposals (
+        id,
+        total_value,
+        deadline_days,
+        payment_stages,
+        approach_description,
+        status,
+        created_at
+      )
+    `)
+    .eq("contractor_id", user!.id)
+    .order("created_at", { ascending: false });
+
+  const budgetRequests = (brData ?? []).map((br: any) => ({
+    id: br.id,
+    message: br.message,
+    status: br.status,
+    created_at: br.created_at,
+    professional: br.professional_profiles
+      ? {
+          id: br.professional_profiles.id,
+          slug: br.professional_profiles.slug,
+          city: br.professional_profiles.city,
+          photo_url: br.professional_profiles.photo_url,
+          profiles: {
+            full_name: br.professional_profiles.profiles?.name ?? null,
+          },
+          professional_specialties: br.professional_profiles.professional_specialties ?? [],
+        }
+      : null,
+    proposals: br.proposals ?? [],
+  }));
+
   return (
     <MinhaContaClient
       profile={{
@@ -95,6 +148,7 @@ export default async function MinhaContaPage() {
       contacts={contacts}
       evaluations={evaluations}
       pendingContacts={pendingContacts}
+      budgetRequests={budgetRequests}
     />
   );
 }

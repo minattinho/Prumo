@@ -23,7 +23,22 @@ function LoginFormInner({
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    const err = searchParams?.get("error");
+    if (err === "role_mismatch_professional") {
+      return "Esta conta é de profissional. Por favor, acesse o painel de profissionais em app.meuprumo.com.br para fazer login.";
+    }
+    if (err === "role_mismatch_contractor") {
+      return "Esta conta é de contratante. Por favor, utilize a página de login para contratantes.";
+    }
+    if (err === "role_mismatch_admin") {
+      return "Esta conta é de administrador. Por favor, utilize a página de login administrativa.";
+    }
+    if (err === "auth_callback_error") {
+      return "Erro na autenticação. Tenta de novo?";
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [recoveryOpen, setRecoveryOpen] = useState(false);
@@ -56,6 +71,38 @@ function LoginFormInner({
       ? await supabase.from("profiles").select("role").eq("id", user.id).single()
       : { data: null };
 
+    if (user && profile) {
+      if (authSource === "contractor" && profile.role !== "contractor") {
+        await supabase.auth.signOut();
+        if (profile.role === "professional") {
+          setError(
+            "Esta conta é de profissional. Por favor, acesse o painel de profissionais em app.meuprumo.com.br para fazer login."
+          );
+        } else if (profile.role === "admin") {
+          setError(
+            "Esta conta é de administrador. Por favor, utilize a página de login administrativa."
+          );
+        } else {
+          setError("Acesso negado. Esta página de login é exclusiva para contratantes.");
+        }
+        setLoading(false);
+        return;
+      }
+
+      if (
+        authSource === "professional" &&
+        profile.role !== "professional" &&
+        profile.role !== "admin"
+      ) {
+        await supabase.auth.signOut();
+        setError(
+          "Esta conta é de contratante. Por favor, utilize a página de login para contratantes."
+        );
+        setLoading(false);
+        return;
+      }
+    }
+
     let destination: string;
     if (profile?.role === "admin") {
       destination = "/admin";
@@ -65,8 +112,7 @@ function LoginFormInner({
       destination = next;
     }
 
-    router.push(destination);
-    router.refresh();
+    window.location.href = destination;
   }
 
   async function handleGoogleLogin() {

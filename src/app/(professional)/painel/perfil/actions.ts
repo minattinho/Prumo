@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import type { ProfessionalPricing } from "@/types";
 
 async function getProfessionalId(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data, error } = await supabase
@@ -50,6 +51,31 @@ export async function updatePhoto(cloudinary_url: string) {
     .eq("user_id", user.id);
 
   if (error) return { error: "Erro ao salvar foto" };
+  revalidatePath("/painel/perfil");
+  revalidatePath("/painel");
+  return { success: true };
+}
+
+export async function updatePricing(data: ProfessionalPricing) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Não autenticado" };
+
+  const normalizePrice = (value: number | null) =>
+    typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : null;
+
+  const { error } = await supabase
+    .from("professional_profiles")
+    .update({
+      price_per_hour: normalizePrice(data.price_per_hour),
+      price_per_day: normalizePrice(data.price_per_day),
+      price_per_month: normalizePrice(data.price_per_month),
+      price_per_service: normalizePrice(data.price_per_service),
+      price_currency: data.price_currency || "BRL",
+    })
+    .eq("user_id", user.id);
+
+  if (error) return { error: "Erro ao salvar valores" };
   revalidatePath("/painel/perfil");
   revalidatePath("/painel");
   return { success: true };
@@ -119,7 +145,7 @@ export async function addContactChannel(data: {
 
   const { error } = await supabase.from("professional_contact_channels").insert({
     professional_id: proId,
-    type: data.type,
+    type: data.type as any,
     value: data.value,
     is_primary: data.is_primary,
     link_formatted: data.value,
@@ -188,7 +214,11 @@ export async function updateSocialNetworks(
   const nonEmpty = networks.filter((n) => n.handle_or_url.trim());
   if (nonEmpty.length > 0) {
     const { error } = await supabase.from("professional_social_networks").insert(
-      nonEmpty.map((n) => ({ professional_id: proId, ...n }))
+      nonEmpty.map((n) => ({
+        professional_id: proId,
+        platform: n.platform as any,
+        handle_or_url: n.handle_or_url,
+      }))
     );
     if (error) return { error: "Erro ao salvar redes sociais" };
   }

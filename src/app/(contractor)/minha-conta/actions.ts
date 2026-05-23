@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import {
   buildPasswordResetRedirectUrl,
   getDefaultAuthOrigin,
@@ -70,5 +70,98 @@ export async function sendPasswordReset(email: string) {
     redirectTo: buildPasswordResetRedirectUrl(origin),
   });
   if (error) return { error: "Erro ao enviar e-mail" };
+  return { success: true };
+}
+
+export async function acceptProposal(
+  proposalId: string,
+  budgetRequestId: string
+): Promise<{ success?: boolean; error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Não autenticado." };
+
+  // 1. Validar que o orçamento pertence a este contratante
+  const { data: budget } = await supabase
+    .from("budget_requests")
+    .select("id")
+    .eq("id", budgetRequestId)
+    .eq("contractor_id", user.id)
+    .single();
+
+  if (!budget) {
+    return { error: "Solicitação de orçamento não encontrada ou não pertence a você." };
+  }
+
+  const serviceSupabase = createServiceClient();
+
+  // 2. Marcar a proposta escolhida como ACCEPTED
+  const { error: acceptError } = await serviceSupabase
+    .from("proposals")
+    .update({ status: "ACCEPTED" })
+    .eq("id", proposalId);
+
+  if (acceptError) {
+    console.error("[acceptProposal] erro ao aceitar:", acceptError.message);
+    return { error: "Erro ao aceitar a proposta." };
+  }
+
+  // 3. Marcar todas as outras propostas como REJECTED
+  await serviceSupabase
+    .from("proposals")
+    .update({ status: "REJECTED" })
+    .eq("budget_request_id", budgetRequestId)
+    .neq("id", proposalId);
+
+  // 4. Mudar status da solicitação de orçamento para IN_NEGOTIATION
+  await serviceSupabase
+    .from("budget_requests")
+    .update({ status: "IN_NEGOTIATION" })
+    .eq("id", budgetRequestId);
+
+  revalidatePath("/minha-conta");
+  return { success: true };
+}
+
+export async function rejectProposal(
+  proposalId: string,
+  budgetRequestId: string
+): Promise<{ success?: boolean; error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Não autenticado." };
+
+  // 1. Validar que o orçamento pertence a este contratante
+  const { data: budget } = await supabase
+    .from("budget_requests")
+    .select("id")
+    .eq("id", budgetRequestId)
+    .eq("contractor_id", user.id)
+    .single();
+
+  if (!budget) {
+    return { error: "Solicitação de orçamento não encontrada ou não pertence a você." };
+  }
+
+  const serviceSupabase = createServiceClient();
+
+  // 2. Marcar a proposta específica como REJECTED
+  const { error } = await serviceSupabase
+    .from("proposals")
+    .update({ status: "REJECTED" })
+    .eq("id", proposalId);
+
+  if (error) {
+    console.error("[rejectProposal] erro ao recusar:", error.message);
+    return { error: "Erro ao recusar a proposta." };
+  }
+
+  revalidatePath("/minha-conta");
   return { success: true };
 }

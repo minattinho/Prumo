@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "./types";
+import { getCookieDomain } from "./cookie-domain";
 
 export function createServiceClient() {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -27,12 +28,21 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, {
+                ...options,
+                domain: getCookieDomain(),
+              })
             );
           } catch {
             // Server Component — cookies só podem ser definidos em Route Handlers/Actions
           }
         },
+      },
+      cookieOptions: {
+        domain: getCookieDomain(),
+        path: "/",
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
       },
     }
   );
