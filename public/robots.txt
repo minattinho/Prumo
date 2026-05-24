@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Rotas privadas (dashboards)
+Disallow: /painel
+Disallow: /minha-conta
+Disallow: /admin
+
+# Rotas de API
+Disallow: /api
+
+# Rotas de autenticação
+Disallow: /auth
+Disallow: /redefinir-senha
+
+# Páginas internas / dev
+Disallow: /ui
+
+Sitemap: https://meuprumo.com.br/sitemap.xml

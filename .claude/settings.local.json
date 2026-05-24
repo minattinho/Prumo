@@ -14,7 +14,15 @@
       "Bash(powershell -Command \"Get-ChildItem -Path . -Recurse -File | Select-Object -ExpandProperty FullName | Sort-Object\")",
       "Bash(powershell -Command \"Get-ChildItem -Path lib -File; Get-ChildItem -Path lib -Directory | Select-Object -ExpandProperty Name\")",
       "Bash(powershell -Command \"Get-ChildItem -Path src -File | Select-Object -ExpandProperty Name\")",
-      "Bash(powershell -Command \"Get-ChildItem -Path . -Recurse | Select-Object -ExpandProperty FullName | Sort-Object\")"
+      "Bash(powershell -Command \"Get-ChildItem -Path . -Recurse | Select-Object -ExpandProperty FullName | Sort-Object\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\gabri\\\\OneDrive\\\\Desktop\\\\Projetos\\\\Prumo\" -Recurse -Depth 2)",
+      "Bash(Select-Object FullName)",
+      "Bash(grep -E '\\\\.\\(md|json|ts|js\\)$')",
+      "Bash(npm run *)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "ruflo",
+    "supabase"
+  ]
 }

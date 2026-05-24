@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { MapPin, Star, ShieldCheck, ExternalLink, ChevronRight, Lock, BadgeDollarSign } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ContactButton } from "./contact-button";
@@ -7,8 +8,57 @@ import { getServiceLabel } from "@/types/services";
 import { ResponsiveImage } from "@/components/ResponsiveImage";
 import { BudgetRequestModal } from "./budget-request-modal";
 
+const BASE_URL = process.env.NEXT_PUBLIC_MAIN_URL ?? "https://meuprumo.com.br";
+
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+
+  const { data: pro } = await supabase
+    .from("professional_profiles")
+    .select("id, photo_url, personal_description, city, state, user_id")
+    .eq("slug", slug)
+    .single();
+
+  if (!pro) return { title: "Profissional não encontrado | Prumo" };
+
+  const [{ data: profile }, { data: specialties }] = await Promise.all([
+    supabase.from("profiles").select("name").eq("id", pro.user_id).single(),
+    supabase.from("professional_specialties").select("category").eq("professional_id", pro.id).limit(3),
+  ]);
+
+  const name = profile?.name ?? "Profissional";
+  const location = [pro.city, pro.state].filter(Boolean).join(", ");
+  const specs = (specialties ?? []).map((s: { category: string }) => getServiceLabel(s.category)).join(", ");
+  const description = pro.personal_description
+    ?? `${name} é profissional${location ? ` em ${location}` : ""}${specs ? ` especializado em ${specs}` : ""}. Veja portfólio, avaliações e entre em contato pelo Prumo.`;
+  const title = `${name}${location ? ` — ${location}` : ""} | Prumo`;
+  const url = `${BASE_URL}/profissionais/${slug}`;
+
+  return {
+    title,
+    description: description.slice(0, 160),
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description: description.slice(0, 160),
+      url,
+      type: "profile",
+      images: pro.photo_url
+        ? [{ url: pro.photo_url, width: 400, height: 400, alt: `Foto de ${name}` }]
+        : [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description: description.slice(0, 160),
+      images: pro.photo_url ? [pro.photo_url] : [`${BASE_URL}/og-image.png`],
+    },
+  };
 }
 
 const CONTACT_LABELS: Record<string, string> = {

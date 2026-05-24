@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getCookieDomain } from "./lib/supabase/cookie-domain";
 
-const PROFESSIONAL_ROUTES = ["/painel"];
+const PROFESSIONAL_ROUTES = ["/painel", "/admin"];
 const CONTRACTOR_ROUTES = ["/minha-conta"];
 
 export async function proxy(request: NextRequest) {
