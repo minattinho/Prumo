@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { LoginForm } from "../login-form";
 import { RegisterForm } from "../register-form";
@@ -14,22 +14,29 @@ function getMode(value: string | null): AuthMode {
 
 export function ContractorAuthPanel() {
   const searchParams = useSearchParams();
-  const mode = getMode(searchParams.get("modo"));
+  const initialMode = getMode(searchParams.get("modo"));
   const next = searchParams.get("next");
+  
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [registerSuccess, setRegisterSuccess] = useState(false);
 
-  const loginParams = new URLSearchParams();
-  const registerParams = new URLSearchParams({ modo: "cadastro" });
+  // Sincroniza o modo caso mude externamente (ex: abertura do modal em outro modo)
+  useEffect(() => {
+    const currentMode = getMode(searchParams.get("modo"));
+    setMode(currentMode);
+  }, [searchParams]);
 
-  if (next) {
-    loginParams.set("next", next);
-    registerParams.set("next", next);
-  }
+  const handleModeChange = (newMode: AuthMode) => {
+    setMode(newMode);
+    setRegisterSuccess(false);
 
-  const loginHref = loginParams.size
-    ? `/contratante?${loginParams.toString()}`
-    : "/contratante";
-  const registerHref = `/contratante?${registerParams.toString()}`;
+    // Atualiza a URL de forma silenciosa no lado do cliente
+    const url = new URL(window.location.href);
+    url.searchParams.set("modo", newMode);
+    url.searchParams.set("auth", newMode === "cadastro" ? "cadastro" : "login");
+    window.history.pushState(null, "", url.pathname + url.search);
+  };
+
   const showHeader = !(mode === "cadastro" && registerSuccess);
   const isRegister = mode === "cadastro";
 
@@ -71,30 +78,30 @@ export function ContractorAuthPanel() {
         <div
           className={`${isRegister ? "mb-3 sm:mb-4" : "mb-5"} grid grid-cols-2 rounded-xl bg-gray-100 p-1`}
         >
-          <Link
-            href={loginHref}
-            onClick={() => setRegisterSuccess(false)}
+          <button
+            type="button"
+            onClick={() => handleModeChange("login")}
             aria-current={mode === "login" ? "page" : undefined}
-            className={`rounded-lg px-3 py-2 text-center text-sm font-semibold transition-colors ${
+            className={`rounded-lg px-3 py-2 text-center text-sm font-semibold transition-colors cursor-pointer ${
               mode === "login"
                 ? "bg-white text-azul-noite shadow-sm"
                 : "text-cinza-texto hover:text-azul-noite"
             }`}
           >
             Entrar
-          </Link>
-          <Link
-            href={registerHref}
-            onClick={() => setRegisterSuccess(false)}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleModeChange("cadastro")}
             aria-current={isRegister ? "page" : undefined}
-            className={`rounded-lg px-3 py-2 text-center text-sm font-semibold transition-colors ${
+            className={`rounded-lg px-3 py-2 text-center text-sm font-semibold transition-colors cursor-pointer ${
               isRegister
                 ? "bg-white text-azul-noite shadow-sm"
                 : "text-cinza-texto hover:text-azul-noite"
             }`}
           >
             Criar conta
-          </Link>
+          </button>
         </div>
       )}
 

@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { HeroSearch } from "./hero-search";
 import { HeroMapWrapper } from "./hero-map-wrapper";
 import { FAQ } from "@/components/FAQ";
 import { SocialProof } from "@/components/SocialProof";
-import { MestreTip } from "@/components/ui/mestre-tip";
 import {
   Wrench,
   PaintBucket,
@@ -395,18 +393,6 @@ export default async function HomePage({ searchParams }: Props) {
               </div>
             </div>
 
-            {/* Coluna do Mascote */}
-            <div className="hidden lg:flex items-center justify-center shrink-0">
-              <div className="relative w-36 h-36">
-                <Image
-                  src="/mascote/f33fcdef-61d8-4c99-896a-b9da770a0f0e.png"
-                  alt="Mascote Prumo Pro com Ferramentas"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
-
             <div className="flex flex-col items-start md:items-end gap-4 shrink-0">
               <div className="text-right">
                 <div
@@ -432,10 +418,6 @@ export default async function HomePage({ searchParams }: Props) {
           </div>
         </div>
       </section>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-12">
-        <MestreTip text="Dúvidas sobre a contratação? Fale diretamente com o profissional por WhatsApp ou telefone. Na Prumo, a negociação é 100% direta e sem taxas de intermediação!" />
-      </div>
 
       <FAQ />
 

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, CheckCircle2, MessageCircle, ShieldCheck, Star, Search, UserCheck } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -98,28 +97,16 @@ export default function ComoFuncionaPage() {
       {/* 2. SECTION: PARA QUEM BUSCA (CLIENTE) - bg-canvas (White) */}
       <section className="bg-background px-4 py-16 sm:py-24">
         <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16">
-            <div className="text-center md:text-left max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.06em] text-laranja-obra mb-2">
-                PARA CLIENTES
-              </p>
-              <h2 className="text-3xl font-bold tracking-tight font-display text-azul-noite">
-                Como contratar o profissional ideal
-              </h2>
-              <p className="text-sm sm:text-base text-cinza-texto mt-4 leading-relaxed font-sans">
-                Sem burocracias, sem comissões ocultas. Apenas três passos simples para resolver sua necessidade com quem entende do assunto.
-              </p>
-            </div>
-            <div className="hidden md:block shrink-0">
-              <div className="relative w-32 h-32">
-                <Image
-                  src="/mascote/0a570b85-5456-480a-93c4-acf3065f6d2c.png"
-                  alt="Mestre Prumo com celular"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <p className="text-xs font-semibold uppercase tracking-[0.06em] text-laranja-obra mb-2">
+              PARA CLIENTES
+            </p>
+            <h2 className="text-3xl font-bold tracking-tight font-display text-azul-noite">
+              Como contratar o profissional ideal
+            </h2>
+            <p className="text-sm sm:text-base text-cinza-texto mt-4 leading-relaxed font-sans">
+              Sem burocracias, sem comissões ocultas. Apenas três passos simples para resolver sua necessidade com quem entende do assunto.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -154,28 +141,16 @@ export default function ComoFuncionaPage() {
       {/* 3. SECTION: PARA O PROFISSIONAL - bg-[#F4F7FB] (Pale Blueprint) */}
       <section className="bg-[#F4F7FB] px-4 py-16 sm:py-24 border-y border-grid-line">
         <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16">
-            <div className="text-center md:text-left max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.06em] text-laranja-obra mb-2">
-                PARA PROFISSIONAIS
-              </p>
-              <h2 className="text-3xl font-bold tracking-tight font-display text-azul-noite">
-                Conquiste mais clientes e cresça de verdade
-              </h2>
-              <p className="text-sm sm:text-base text-cinza-texto mt-4 leading-relaxed font-sans">
-                Um perfil na Prumo Pro funciona como sua vitrine exclusiva de alto nível. Você recebe contatos diretos sem pagar nenhuma taxa de intermediação por serviço fechado.
-              </p>
-            </div>
-            <div className="hidden md:block shrink-0">
-              <div className="relative w-32 h-32 rounded-2xl overflow-hidden bg-white border border-gray-200 shadow-lg">
-                <Image
-                  src="/mascote/hf_20260501_042752_8d3bb0e1-4e9a-4202-b008-6495a057d9a9.png"
-                  alt="Mestre Prumo instalando ar condicionado"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <p className="text-xs font-semibold uppercase tracking-[0.06em] text-laranja-obra mb-2">
+              PARA PROFISSIONAIS
+            </p>
+            <h2 className="text-3xl font-bold tracking-tight font-display text-azul-noite">
+              Conquiste mais clientes e cresça de verdade
+            </h2>
+            <p className="text-sm sm:text-base text-cinza-texto mt-4 leading-relaxed font-sans">
+              Um perfil na Prumo Pro funciona como sua vitrine exclusiva de alto nível. Você recebe contatos diretos sem pagar nenhuma taxa de intermediação por serviço fechado.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

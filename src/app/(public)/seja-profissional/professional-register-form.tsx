@@ -89,19 +89,31 @@ function StepIndicator({ step }: { step: Step }) {
   ];
 
   return (
-    <div className="flex items-center justify-center gap-0 mb-6">
-      {steps.map(({ n, label }, i) => {
-        const done = step > n;
-        const active = step === n;
-        return (
-          <div key={n} className="flex items-center">
-            <div className="flex flex-col items-center">
+    <div className="relative w-full max-w-xs mx-auto mb-8 select-none">
+      {/* Linha de conexão de fundo */}
+      <div className="absolute top-4 left-10 right-10 h-0.5 bg-gray-200 -translate-y-1/2 z-0" />
+      
+      {/* Linha de progresso ativa */}
+      <div
+        className="absolute top-4 left-10 right-10 h-0.5 bg-azul-principal -translate-y-1/2 z-0 transition-transform duration-500 ease-in-out origin-left"
+        style={{
+          transform: `translateY(-50%) scaleX(${((step - 1) / (steps.length - 1))})`,
+        }}
+      />
+
+      <div className="relative z-10 flex justify-between">
+        {steps.map(({ n, label }) => {
+          const done = step > n;
+          const active = step === n;
+          return (
+            <div key={n} className="flex flex-col items-center w-20 shrink-0">
+              {/* Círculo com o número ou check */}
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-colors ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 transition-all duration-300 ${
                   done
-                    ? "bg-azul-principal border-azul-principal text-white"
+                    ? "bg-azul-principal border-azul-principal text-white shadow-sm"
                     : active
-                    ? "border-azul-principal text-azul-principal bg-white"
+                    ? "border-azul-principal text-azul-principal bg-white ring-4 ring-azul-principal/10"
                     : "border-gray-200 text-cinza-texto bg-white"
                 }`}
               >
@@ -113,24 +125,23 @@ function StepIndicator({ step }: { step: Step }) {
                   n
                 )}
               </div>
+              
+              {/* Rótulo */}
               <span
-                className={`text-xs mt-1 font-medium ${
-                  active ? "text-azul-principal" : done ? "text-azul-principal" : "text-cinza-texto"
+                className={`text-xs mt-2 font-medium text-center whitespace-nowrap transition-colors duration-300 ${
+                  active
+                    ? "text-azul-principal font-semibold"
+                    : done
+                    ? "text-azul-principal"
+                    : "text-cinza-texto"
                 }`}
               >
                 {label}
               </span>
             </div>
-            {i < steps.length - 1 && (
-              <div
-                className={`h-0.5 w-12 mx-1 mb-4 transition-colors ${
-                  step > n ? "bg-azul-principal" : "bg-gray-200"
-                }`}
-              />
-            )}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
