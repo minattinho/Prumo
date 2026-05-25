@@ -6,6 +6,28 @@
 
 ---
 
+## Documentação Técnica
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [docs/architecture.md](docs/architecture.md) | Arquitetura, subdomain routing, middleware, auth flow, server/client boundary |
+| [docs/database.md](docs/database.md) | 26 tabelas PostgreSQL, enums, RLS, storage buckets, diagrama ER |
+| [docs/api.md](docs/api.md) | Todos os API routes com params e responses |
+| [docs/components.md](docs/components.md) | Biblioteca de componentes shadcn/ui e customizados |
+| [docs/development.md](docs/development.md) | Padrões, convenções, server actions, como adicionar features |
+| [docs/testing.md](docs/testing.md) | Vitest + Playwright: setup, padrões, cobertura |
+| [docs/deployment.md](docs/deployment.md) | Variáveis de ambiente, setup Supabase, deploy Vercel |
+
+**Produto e Design:**
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [COMPANY.md](COMPANY.md) | Missão, problema, modelo de negócio, diferenciais |
+| [PRODUCT.md](PRODUCT.md) | Personas, product purpose, brand personality, princípios de design |
+| [DESIGN.md](DESIGN.md) | Design system completo: cores, tipografia, componentes, do's & don'ts |
+
+---
+
 ## O que é o Prumo
 
 O Prumo resolve um problema duplo no mercado brasileiro de serviços:
