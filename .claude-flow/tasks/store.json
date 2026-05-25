@@ -1,0 +1,18 @@
+{
+  "tasks": {
+    "task-1779665605281-07bk1f": {
+      "taskId": "task-1779665605281-07bk1f",
+      "type": "security",
+      "description": "Analise toda a segurança do projeto",
+      "priority": "critical",
+      "status": "pending",
+      "progress": 0,
+      "assignedTo": [],
+      "tags": [],
+      "createdAt": "2026-05-24T23:33:25.281Z",
+      "startedAt": null,
+      "completedAt": null
+    }
+  },
+  "version": "3.0.0"
+}

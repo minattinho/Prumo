@@ -1,0 +1,18 @@
+{
+  "agents": {
+    "agent-1779665540050-md080r": {
+      "agentId": "agent-1779665540050-md080r",
+      "agentType": "coder",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "provider": "anthropic"
+      },
+      "createdAt": "2026-05-24T23:32:20.050Z",
+      "model": "sonnet",
+      "modelRoutedBy": "default"
+    }
+  },
+  "version": "3.0.0"
+}
